@@ -4,9 +4,11 @@ package com.company.cards;
  * Created by zach on 20/05/17.
  */
 public class Deck extends CardCollection {
+    private static final int NUM_CARDS_IN_STANDARD_DECK = 52;
+    
     public Deck() {
-        maxNumCards = 52;
-        numCards = 52;
+        maxNumCards = NUM_CARDS_IN_STANDARD_DECK;
+        numCards = NUM_CARDS_IN_STANDARD_DECK;
         cards = new Card[maxNumCards];
 
         // Initializing the cards in the deck

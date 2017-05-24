@@ -17,6 +17,27 @@ public class CardCollection {
             System.out.println(c);
         }
     }
+	
+	
+	/*****************
+	 * Card Operations
+	 * @return
+	 */
+    // Peeks at the card at the top of the collection (LIFO)
+	public Card peek() {
+		if(numCards > 1)
+			return cards[numCards - 1];
+		
+		return null;
+	}
+	
+	// Peeks at the card at position k
+    public Card peek(int position) {
+        if(position >= numCards)
+	        return null;
+        
+        return cards[position];
+    }
     
     // Removes the card at the top of the deck, returns it
     public Card pop() {
