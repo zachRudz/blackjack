@@ -93,8 +93,8 @@ public abstract class Player extends Person {
 	 * Operations would differ depending on if the user were a human or CPU
 	 * @return bet that would be placed
 	 */
-	public double placeBet() { return 0.00;	}
-	protected Boolean play(Deck deck, Dealer dealer, Player[] otherPlayerHands) { return true;}
+	public abstract double placeBet();
+	protected abstract Boolean play(Deck deck, Dealer dealer, Player[] otherPlayerHands);
 	
 
 	private String name;
