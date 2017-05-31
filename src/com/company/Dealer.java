@@ -4,6 +4,8 @@ import com.company.cards.Deck;
 import com.company.cards.Hand;
 import com.company.cards.Card;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Created by zach on 23/05/17.
  */
@@ -49,10 +51,7 @@ public class Dealer extends Person {
 	 * @return
 	 */
 	protected Boolean play(Deck deck, Dealer dealer, Player[] otherPlayers) {
-		// Print the dealer's hand
 		System.out.println();
-		System.out.println(toString());
-		printCards();
 
 		int totalRank, highestValidRank = 0;
 

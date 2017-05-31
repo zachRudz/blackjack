@@ -16,7 +16,7 @@ public class HumanPlayer extends Player {
 	
 	/*******************
 	 * Before starting a round, we must place an initial bet.
-	 * Override the parent function, with stdio operation to get the bet from the user
+	 * Stdio operation to get the bet from the user
 	 * @return
 	 */
 	public double placeBet() {
@@ -49,6 +49,10 @@ public class HumanPlayer extends Player {
 
 		// Checking if we started out with blackjack
 		if(getHand().getTotalRank() == 21) {
+			// Print the hand of this person
+			System.out.println(toString());
+			printCards();
+
 			System.out.println(String.format("%s got blackjack!", getName()));
 			System.out.println("-----------");
 			return false;

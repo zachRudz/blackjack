@@ -21,6 +21,7 @@ public class GameController {
 		printGameInfo(dealer, players);
 
 		// Let each player make their decision, and then the dealer too
+		resetRankings();
 		play_players(deck, dealer, players);
 		int dealerRank = play_dealer(deck, dealer, players);
 
@@ -36,6 +37,9 @@ public class GameController {
 
 	// Print the cards of each player, the number of cards in the deck, and the bets of each player.
 	private void printGameInfo(Dealer dealer, Player[] players) {
+		// Print the pot to be won
+		System.out.println(String.format("Pot: $%.2f", dealer.getTotalBets()));
+
 		// Peek at the dealer's hand
 		System.out.println("Dealer");
 		System.out.println(String.format("Score: [%d + ?]", dealer.getFirstCard().getRankValue()));
@@ -65,6 +69,8 @@ public class GameController {
 
 	// Place the bets for all the players
 	private void placeBets(Dealer dealer, Player[] players) {
+		dealer.setTotalBets(0);
+
 		// Placing bets
 		System.out.println("Place your bets.");
 		for (Player p : players) {
@@ -75,7 +81,21 @@ public class GameController {
 			dealer.addToTotalBets(p.getBet());
 		}
 
+		// Adding the dealer's contribution
+		double dealerBet = dealer.getTotalBets() / players.length;
+		dealer.addToTotalBets(dealerBet);
+		System.out.println(String.format("Dealer matches the average bet ($%.2f).", dealerBet));
+
 		System.out.println();
+	}
+
+	/**
+	 * Because we have the rankings and the list of highest ranking players all in member variables,
+	 * we need to reset them before each game.
+	 */
+	private void resetRankings() {
+		bestRank = 0;
+		highestRankPlayers.clear();
 	}
 
 	// Let each player make their turn
@@ -137,6 +157,7 @@ public class GameController {
 
 		// Printing the dealer's rank
 		System.out.println(String.format("\tDealer [%d]", dealer.getHand().getTotalRank()));
+		System.out.println();
 	}
 
 
@@ -164,8 +185,26 @@ public class GameController {
 			return;
 		}
 
-		// Testing if the dealer won, no one won, or if one or more players have won
-		if (dealerRank > bestRank) {
+		// Testing if
+		// - The dealer won, as well as 1 or more player
+		// - The dealer won
+		// - No one won
+		// - One or more players have won
+		if (dealerRank == bestRank) {
+			// Dealer matched the highest rank
+			// Divide the winnings between all the players + the dealer
+			int numWinners = highestRankPlayers.size() + 1;
+			double winningsPerPlayer = dealer.getTotalBets() / numWinners;
+
+			// Distribute winnings to players
+			for (Player p : highestRankPlayers) {
+				System.out.println(String.format("\t%s: +$%.2f", p.getName(), winningsPerPlayer));
+				p.addFunds(winningsPerPlayer);
+			}
+
+			return;
+
+		} else if (dealerRank > bestRank) {
 			// Dealer wins: Pot doesn't go to anyone
 			System.out.println("Dealer wins!");
 

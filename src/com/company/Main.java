@@ -40,6 +40,9 @@ public class Main {
 					return;
 				} else if (response.matches("[yY]*")) {
 					isValidResponse = true;
+					System.out.println();
+					System.out.println();
+					System.out.println();
 				} else {
 					System.out.println("I didn't understand that.");
 				}
