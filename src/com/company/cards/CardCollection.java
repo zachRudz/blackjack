@@ -4,10 +4,8 @@ import java.util.Random;
 /**
  * Created by zach on 20/05/17.
  */
-public class CardCollection {
-    // Can't use this constructor as is
-    protected CardCollection() {}
-    public CardCollection(int maxNumCards) { this.maxNumCards = maxNumCards; }
+public abstract class CardCollection {
+    protected CardCollection(int maxNumCards) { this.maxNumCards = maxNumCards; }
     
     
     // Print to stdout
