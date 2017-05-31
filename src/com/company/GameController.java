@@ -3,6 +3,7 @@ package com.company;
 import com.company.cards.Deck;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by zach on 23/05/17.
@@ -11,7 +12,7 @@ public class GameController {
 	private int bestRank = 0;
 	private ArrayList<Player> highestRankPlayers = new ArrayList();
 
-	public void playRound(Deck deck, Dealer dealer, Player[] players) {
+	public void playRound(Deck deck, Dealer dealer, ArrayList players) {
 		// Prepare for the round to begin
 		deck.shuffle();
 		placeBets(dealer, players);
@@ -36,7 +37,7 @@ public class GameController {
 	}
 
 	// Print the cards of each player, the number of cards in the deck, and the bets of each player.
-	private void printGameInfo(Dealer dealer, Player[] players) {
+	private void printGameInfo(Dealer dealer, ArrayList<Player> players) {
 		// Print the pot to be won
 		System.out.println(String.format("Pot: $%.2f", dealer.getTotalBets()));
 
@@ -58,7 +59,7 @@ public class GameController {
 	}
 
 	// Deal cards to all players + the dealer
-	private void dealCards(Deck deck, Dealer dealer, Player[] players) {
+	private void dealCards(Deck deck, Dealer dealer, ArrayList<Player> players) {
 		for (Player p : players) {
 			p.draw(deck, 2);
 		}
@@ -68,7 +69,7 @@ public class GameController {
 	}
 
 	// Place the bets for all the players
-	private void placeBets(Dealer dealer, Player[] players) {
+	private void placeBets(Dealer dealer, ArrayList<Player> players) {
 		dealer.setTotalBets(0);
 
 		// Placing bets
@@ -82,7 +83,7 @@ public class GameController {
 		}
 
 		// Adding the dealer's contribution
-		double dealerBet = dealer.getTotalBets() / players.length;
+		double dealerBet = dealer.getTotalBets() / players.size();
 		dealer.addToTotalBets(dealerBet);
 		System.out.println(String.format("Dealer matches the average bet ($%.2f).", dealerBet));
 
@@ -100,7 +101,7 @@ public class GameController {
 
 	// Let each player make their turn
 	// This means the hit/stand/double down action phase.
-	private void play_players(Deck deck, Dealer dealer, Player[] players) {
+	private void play_players(Deck deck, Dealer dealer, ArrayList<Player> players) {
 		int currentRank;
 
 		// Letting each player have their turn
@@ -129,7 +130,7 @@ public class GameController {
 		}
 	}
 
-	private int play_dealer(Deck deck, Dealer dealer, Player[] players) {
+	private int play_dealer(Deck deck, Dealer dealer, ArrayList<Player> players) {
 		int dealerRank;
 
 		// Let the dealer play
@@ -146,7 +147,7 @@ public class GameController {
 	 * @param dealer
 	 * @param players
 	 */
-	private void printFinalRanks(Dealer dealer, Player[] players) {
+	private void printFinalRanks(Dealer dealer, ArrayList<Player> players) {
 		System.out.println();
 		System.out.println("Final scores:");
 
@@ -167,7 +168,7 @@ public class GameController {
 	 * @param dealer
 	 * @param players
 	 */
-	private void handleWinnings(int dealerRank, Dealer dealer, Player[] players) {
+	private void handleWinnings(int dealerRank, Dealer dealer, ArrayList<Player> players) {
 
 		// Seeing if the dealer has the highest rank (without going over 21)
 		if (dealerRank > 21) {
@@ -235,10 +236,48 @@ public class GameController {
 	 * @param dealer
 	 * @param players
 	 */
-	private void collectCards(Deck deck, Dealer dealer, Player[] players) {
+	private void collectCards(Deck deck, Dealer dealer, ArrayList<Player> players) {
 		deck.collectCards(dealer.getHand());
 
 		for(Player p : players)
 			deck.collectCards(p.getHand());
+	}
+
+
+	/**
+	 * Check to see who's run out of money. Eliminate players who have won the game, and make final statements if
+	 * everyone has busted out, or if one player is left.
+	 *
+	 * @param players
+	 * @return Returns True/false if the game is over (everyone busted out, or 1 player remains).
+	 */
+	public boolean postGameEliminationCheck(ArrayList<Player> players) {
+		System.out.println();
+
+		// Check if any players have run out of funds; If so, eliminate them from the table
+		Iterator<Player> p = players.iterator();
+		Player tmp;
+		while(p.hasNext()) {
+			tmp = p.next();
+			if(tmp.getFunds() == 0.00) {
+				System.out.println(tmp.getName() + " is out of money; They have been eliminated!");
+				p.remove();
+			}
+		}
+
+		// Check if we've got 1 player remaining, or if everyone has busted out
+		if(players.size() == 0) {
+			// Everyone busted out in the last turn
+			System.out.println("All players have been eliminated!");
+			return true;
+		} else if(players.size() == 1) {
+			// One player has won.
+			System.out.println(players.get(0).getName() + " is the last player left!");
+			System.out.println(players.get(0).getName() + " has won!");
+			return true;
+		}
+
+		// We still have players left. We can continue playing.
+		return false;
 	}
 }

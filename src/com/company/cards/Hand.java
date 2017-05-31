@@ -5,6 +5,7 @@ package com.company.cards;
  */
 public class Hand extends CardCollection {
 	public Hand() {
+		super();
 		maxNumCards = 7;
 		cards = new Card[maxNumCards];
 	}

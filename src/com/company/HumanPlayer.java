@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import com.company.Dealer;
@@ -44,7 +45,7 @@ public class HumanPlayer extends Player {
 	 * @param dealer
 	 * @param otherPlayers
 	 */
-	public Boolean play(Deck deck, Dealer dealer, Player[] otherPlayers) {
+	public Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayers) {
 		System.out.println();
 
 		// Checking if we started out with blackjack

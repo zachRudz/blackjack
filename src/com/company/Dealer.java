@@ -4,6 +4,8 @@ import com.company.cards.Deck;
 import com.company.cards.Hand;
 import com.company.cards.Card;
 
+import java.util.ArrayList;
+
 import static java.lang.Thread.sleep;
 
 /**
@@ -50,7 +52,7 @@ public class Dealer extends Person {
 	 * @param otherPlayers
 	 * @return
 	 */
-	protected Boolean play(Deck deck, Dealer dealer, Player[] otherPlayers) {
+	protected Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayers) {
 		System.out.println();
 
 		int totalRank, highestValidRank = 0;

@@ -4,6 +4,8 @@ import com.company.cards.CardCollection;
 import com.company.cards.Deck;
 import com.company.cards.Hand;
 
+import java.util.ArrayList;
+
 /**
  * The player at the table. This could be a CPU or a human player.
  * Created by zach on 23/05/17.
@@ -94,7 +96,7 @@ public abstract class Player extends Person {
 	 * @return bet that would be placed
 	 */
 	public abstract double placeBet();
-	protected abstract Boolean play(Deck deck, Dealer dealer, Player[] otherPlayerHands);
+	protected abstract Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
 	
 
 	private String name;

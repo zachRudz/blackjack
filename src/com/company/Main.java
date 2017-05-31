@@ -2,6 +2,7 @@ package com.company;
 
 import com.company.cards.Deck;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
@@ -14,9 +15,10 @@ public class Main {
 	    Dealer dealer = new Dealer();
 	    
         // Initializing players
-	    Player players[] = new Player[2];
-	    players[0] = new HumanPlayer("John", 500.00);
-	    players[1] = new HumanPlayer("Steve", 500.00);
+	    ArrayList<Player> players = new ArrayList();
+	    players.add(new HumanPlayer("John", 500.00));
+	    players.add(new HumanPlayer("Steve", 500.00));
+		players.add(new HumanPlayer("Lilly", 500.00));
 
 
 	    // Begin playing rounds
@@ -27,6 +29,10 @@ public class Main {
 		do {
 			// Play a single round
 			gc.playRound(deck, dealer, players);
+			if(gc.postGameEliminationCheck(players)) {
+				System.out.println("See you, space cowboy.");
+				return;
+			}
 
 			// Keep asking the user until we get a valid response from them
 			isValidResponse = false;
