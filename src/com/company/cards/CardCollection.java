@@ -12,9 +12,12 @@ public class CardCollection {
     
     // Print to stdout
     public void printCards() {
-	    System.out.println("Cards: [" + numCards + " / " + maxNumCards + "]");
+	    //System.out.println("Cards: [" + numCards + "]");
 	    for(Card c : cards) {
-            System.out.println(c);
+			// Don't print null cards
+	    	if(c != null) {
+				System.out.println("\t" + c);
+			}
         }
     }
 	

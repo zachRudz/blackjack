@@ -14,7 +14,7 @@ public class GameController {
 	public void playRound(Deck deck, Dealer dealer, Player[] players) {
 		// Prepare for the round to begin
 		deck.shuffle();
-		placeBets(deck, players);
+		placeBets(dealer, players);
 		dealCards(deck, dealer, players);
 
 		// Print the cards of each player, the number of cards in the deck, and the bets of each player.
@@ -24,22 +24,33 @@ public class GameController {
 		play_players(deck, dealer, players);
 		int dealerRank = play_dealer(deck, dealer, players);
 
+		// Print the scores of each player + dealer
+		printFinalRanks(dealer, players);
 
 		// Compare to see who was the winner.
-        handleWinnings(dealerRank, dealer);
+        handleWinnings(dealerRank, dealer, players);
+
+        // Collect cards from players
+		collectCards(deck, dealer, players);
 	}
 
 	// Print the cards of each player, the number of cards in the deck, and the bets of each player.
 	private void printGameInfo(Dealer dealer, Player[] players) {
 		// Peek at the dealer's hand
-		System.out.println("Dealer's cards: " + dealer.getFirstCard());
+		System.out.println("Dealer");
+		System.out.println(String.format("Score: [%d + ?]", dealer.getFirstCard().getRankValue()));
+		System.out.println("\t" + dealer.getFirstCard());
+		System.out.println("\t???");
+		System.out.println();
 
 		// Printing each player's hand
 		for (Player p : players) {
 			System.out.println(p);
 			p.getHand().printCards();
+			System.out.println();
 		}
 		System.out.println("=================");
+		System.out.println();
 	}
 
 	// Deal cards to all players + the dealer
@@ -48,16 +59,23 @@ public class GameController {
 			p.draw(deck, 2);
 		}
 		dealer.draw(deck, 2);
+
+		System.out.println();
 	}
 
 	// Place the bets for all the players
-	private void placeBets(Deck deck, Player[] players) {
+	private void placeBets(Dealer dealer, Player[] players) {
 		// Placing bets
 		System.out.println("Place your bets.");
 		for (Player p : players) {
 			System.out.println("[" + p.getName() + "]'s turn");
 			p.placeBet();
+
+			// Adding bet to prize pool
+			dealer.addToTotalBets(p.getBet());
 		}
+
+		System.out.println();
 	}
 
 	// Let each player make their turn
@@ -68,11 +86,10 @@ public class GameController {
 		// Letting each player have their turn
 		for (Player p : players) {
 			// Each player has their turn
-			System.out.println(p.play(deck, dealer, players));
+			p.play(deck, dealer, players);
 
 			// Printing this player's rank
 			currentRank = p.getHand().getTotalRank();
-			System.out.println("Rank: " + currentRank);
 
 			// Seeing if the p'th player has the highest rank (without going over 21)
 			if (currentRank < 22) {
@@ -100,22 +117,47 @@ public class GameController {
 
 		// Get his rank, and print it
 		dealerRank = dealer.getHand().getTotalRank();
-		System.out.println("Rank: " + dealerRank);
 
 		return dealerRank;
 	}
 
-	// Test to see who won, if anyone.
-	private void handleWinnings(int dealerRank, Dealer dealer) {
+	/**
+	 * Print the ranks of each player's hands
+	 * @param dealer
+	 * @param players
+	 */
+	private void printFinalRanks(Dealer dealer, Player[] players) {
+		System.out.println();
+		System.out.println("Final scores:");
+
+		// Printing players' rank
+		for(Player p : players) {
+			System.out.println(String.format("\t%s [%d]", p.getName(), p.getHand().getTotalRank()));
+		}
+
+		// Printing the dealer's rank
+		System.out.println(String.format("\tDealer [%d]", dealer.getHand().getTotalRank()));
+	}
+
+
+	/**
+	 * Test to see who won, if anyone.
+	 * @param dealerRank
+	 * @param dealer
+	 * @param players
+	 */
+	private void handleWinnings(int dealerRank, Dealer dealer, Player[] players) {
 
 		// Seeing if the dealer has the highest rank (without going over 21)
 		if (dealerRank > 21) {
 			// Dealer busts: Pot split between highest ranked players
 			System.out.println("Dealer has busted!");
+			System.out.println("Winners:");
 
 			int numWinners = highestRankPlayers.size();
 			double winningsPerPlayer = dealer.getTotalBets() / numWinners;
 			for (Player p : highestRankPlayers) {
+				System.out.println(String.format("\t%s: +$%.2f", p.getName(), winningsPerPlayer));
 				p.addFunds(winningsPerPlayer);
 			}
 
@@ -126,23 +168,38 @@ public class GameController {
 		if (dealerRank > bestRank) {
 			// Dealer wins: Pot doesn't go to anyone
 			System.out.println("Dealer wins!");
-			return;
-		} else if (bestRank == 0) {
+
+		} else if (highestRankPlayers.size() == 0) {
 			// No one wins (Everyone busted)
 			System.out.println("Everyone has busted! Bets go back to everyone.");
-			return;
-		} else if (dealerRank > 21) {
-			// One or more players have beaten the dealer
 
-
-			int numWinners = highestRankPlayers.size();
-			double winningsPerPlayer = dealer.getTotalBets() / numWinners;
-			for (Player p : highestRankPlayers) {
-				p.addFunds(winningsPerPlayer);
+			for (Player p : players) {
+				p.addFunds(p.getBet());
 			}
 		} else {
+			System.out.println("Winners:");
+			// One or more players have beaten the dealer
+			int numWinners = highestRankPlayers.size();
 
+			double winningsPerPlayer = dealer.getTotalBets() / numWinners;
+			for (Player p : highestRankPlayers) {
+				System.out.println(String.format("\t%s: +$%.2f", p.getName(), winningsPerPlayer));
+				p.addFunds(winningsPerPlayer);
+			}
 		}
+	}
 
+
+	/**
+	 * Collect all of the cards from the players + dealer and put them back in the deck
+	 * @param deck
+	 * @param dealer
+	 * @param players
+	 */
+	private void collectCards(Deck deck, Dealer dealer, Player[] players) {
+		deck.collectCards(dealer.getHand());
+
+		for(Player p : players)
+			deck.collectCards(p.getHand());
 	}
 }

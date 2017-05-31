@@ -2,6 +2,8 @@ package com.company;
 
 import com.company.cards.Deck;
 
+import java.util.Scanner;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -15,8 +17,33 @@ public class Main {
 	    Player players[] = new Player[2];
 	    players[0] = new HumanPlayer("John", 500.00);
 	    players[1] = new HumanPlayer("Steve", 500.00);
-	    
-	    
-	    gc.playRound(deck, dealer, players);
+
+
+	    // Begin playing rounds
+		Scanner in = new Scanner(System.in);
+		String response;
+		Boolean isValidResponse;
+
+		do {
+			// Play a single round
+			gc.playRound(deck, dealer, players);
+
+			// Keep asking the user until we get a valid response from them
+			isValidResponse = false;
+			while(!isValidResponse) {
+				// Read user's response
+				System.out.print("Play again? [y/n]");
+				response = in.next();
+
+				if (response.matches("[nN]*")) {
+					System.out.println("See you, space cowboy.");
+					return;
+				} else if (response.matches("[yY]*")) {
+					isValidResponse = true;
+				} else {
+					System.out.println("I didn't understand that.");
+				}
+			}
+		} while(true);
     }
 }

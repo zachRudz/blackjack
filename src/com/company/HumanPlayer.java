@@ -31,7 +31,7 @@ public class HumanPlayer extends Player {
 				System.out.println("You don't have enough funds to bet that much.");
 			} else {
 				setBet(betAmount);
-				System.out.println(getName() + ": I'll bet " + betAmount + ".");
+				System.out.println(String.format("%s: I'll bet $%.2f.", getName(), betAmount));
 				return betAmount;
 			}
 		}
@@ -45,13 +45,23 @@ public class HumanPlayer extends Player {
 	 * @param otherPlayers
 	 */
 	public Boolean play(Deck deck, Dealer dealer, Player[] otherPlayers) {
+		System.out.println();
+
+		// Checking if we started out with blackjack
+		if(getHand().getTotalRank() == 21) {
+			System.out.println(String.format("%s got blackjack!", getName()));
+			System.out.println("-----------");
+			return false;
+		}
+
 		Boolean canDoubleDown = true;
 		int handRank;
 		
 		Boolean isValidInput;
 		String choice;
 		Scanner in = new Scanner(System.in);
-		
+
+
 		// Checking if we have enough funds to double down
 		if(getFunds() < getBet())
 			canDoubleDown = false;
@@ -63,16 +73,20 @@ public class HumanPlayer extends Player {
 				// Printing the user's info
 				System.out.println(toString());
 				printCards();
-				
+
+
+
+				// Printing the user prompt
 				if (canDoubleDown)
 					System.out.println("[H]it / [S]tay / [D]ouble down");
 				else
 					System.out.println("[H]it / [S]tay");
 				
-				// Prompt the user for stdin
+				// Wait for stdin
 				System.out.print("What do you want to do? ");
 				choice = in.next();
-				
+
+
 				// Testing input
 				if (choice.matches("[sS]*")) {
 					// Stay: End your turn
@@ -83,6 +97,7 @@ public class HumanPlayer extends Player {
 				} else if (choice.matches("[hH]*")) {
 					// Hit: Draw a card
 					System.out.println(getName() + ": Hit me.");
+					System.out.println("-----------");
 					getHand().draw(deck, 1);
 					isValidInput = true;
 					
@@ -116,19 +131,13 @@ public class HumanPlayer extends Player {
 					System.out.println("Bad input. ");
 				}
 			} // Only continue if input is valid
-			
+
 			// Tally up new score
 			handRank = getHand().getTotalRank();
-			// Stop turn if we've hit 21.
-			if(handRank == 21) {
-				System.out.println(getName() + ": I've got 21!");
-				System.out.println("-----------");
-				return true;
-			}
-			
+
 			// Can only double down on the first turn; Disable the ability to do so
 			canDoubleDown = false;
-		} while(handRank < 21); // Continue if we're still under 21 (and user didn't stay)
+		} while(handRank < 22); // Continue if we're still under 21 (and user didn't stay)
 		
 		// Our hand is greater than 21; We've busted out.
 		System.out.println(toString());

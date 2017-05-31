@@ -8,7 +8,7 @@ import com.company.cards.Hand;
  * The player at the table. This could be a CPU or a human player.
  * Created by zach on 23/05/17.
  */
-public class Player extends Person {
+public abstract class Player extends Person {
 	/**************
 	 * Constructors
 	 * @param name
@@ -38,7 +38,7 @@ public class Player extends Person {
 	/*********************
 	 * Getters and setters
 	 * @return
-	 */
+ */
 	// Name
 	public String getName() {
 		return name;

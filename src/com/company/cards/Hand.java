@@ -36,7 +36,7 @@ public class Hand extends CardCollection {
 		// (Would we be better off if an ace were treated as a 1 or an 11?)
 		while(numAces > 0) {
 			// If we don't go over 21, then treat the ace as an 11 instead of the default 1.
-			if(totalRank + 10 < 21) {
+			if((totalRank + 10) < 22) {
 				totalRank += 10;
 			}
 			numAces--;
