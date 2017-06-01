@@ -10,6 +10,7 @@ import java.util.Iterator;
  */
 public class GameController {
 	private int bestRank = 0;
+	private double minimumBet = 5.00;
 	private ArrayList<Player> highestRankPlayers = new ArrayList();
 
 	public void playRound(Deck deck, Dealer dealer, ArrayList players) {
@@ -73,10 +74,10 @@ public class GameController {
 		dealer.setTotalBets(0);
 
 		// Placing bets
-		System.out.println("Place your bets.");
+		System.out.println("Place your bets (Minimum bet: " + minimumBet + ").");
 		for (Player p : players) {
 			System.out.println("[" + p.getName() + "]'s turn");
-			p.placeBet();
+			p.placeBet(minimumBet);
 
 			// Adding bet to prize pool
 			dealer.addToTotalBets(p.getBet());
@@ -86,6 +87,9 @@ public class GameController {
 		double dealerBet = dealer.getTotalBets() / players.size();
 		dealer.addToTotalBets(dealerBet);
 		System.out.println(String.format("Dealer matches the average bet ($%.2f).", dealerBet));
+
+		// Double the minimum bet for the next round
+		minimumBet *= 2;
 
 		System.out.println();
 	}

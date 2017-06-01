@@ -95,7 +95,7 @@ public abstract class Player extends Person {
 	 * Operations would differ depending on if the user were a human or CPU
 	 * @return bet that would be placed
 	 */
-	public abstract double placeBet();
+	public abstract double placeBet(double minimumBet);
 	protected abstract Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
 	
 

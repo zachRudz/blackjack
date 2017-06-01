@@ -20,7 +20,7 @@ public class HumanPlayer extends Player {
 	 * Stdio operation to get the bet from the user
 	 * @return
 	 */
-	public double placeBet() {
+	public double placeBet(double minimumBet) {
 		Scanner in = new Scanner(System.in);
 		double betAmount;
 		
@@ -30,6 +30,8 @@ public class HumanPlayer extends Player {
 			
 			if(betAmount > getFunds()) {
 				System.out.println("You don't have enough funds to bet that much.");
+			} else if(betAmount <= minimumBet) {
+				System.out.println(String.format("You must bet at least the minimum bet ($%.2f) ", minimumBet));
 			} else {
 				setBet(betAmount);
 				System.out.println(String.format("%s: I'll bet $%.2f.", getName(), betAmount));
