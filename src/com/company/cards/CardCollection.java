@@ -5,9 +5,7 @@ import java.util.Random;
  * Created by zach on 20/05/17.
  */
 public abstract class CardCollection {
-    protected CardCollection(int maxNumCards) { this.maxNumCards = maxNumCards; }
-    
-    
+
     // Print to stdout
     public void printCards() {
 	    //System.out.println("Cards: [" + numCards + "]");
