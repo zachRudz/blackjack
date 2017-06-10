@@ -38,7 +38,7 @@ public abstract class Player extends Person {
 	/*********************
 	 * Getters and setters
 	 * @return
- */
+	 */
 	// Name
 	public String getName() {
 		return name;
@@ -53,7 +53,7 @@ public abstract class Player extends Person {
 	public double getFunds() {
 		return funds;
 	}
-	
+
 	public void setFunds(double funds) {
 		this.funds = funds;
 	}
@@ -61,7 +61,8 @@ public abstract class Player extends Person {
 	public void addFunds(double fundsToAdd) {
 		this.funds += fundsToAdd;
 	}
-	
+
+	// Bets
 	// The player's bet for the k'th round
 	public void setBet(double bet) {
 		if(bet > funds) {
@@ -79,15 +80,35 @@ public abstract class Player extends Person {
 			throw new ArithmeticException("Not enough funds to double down!");
 		}
 		
-		// Add the new bet to the pot
-		dealer.addToTotalBets(bet);
-		
 		// Double the bet on our end
 		funds -= bet;
 		bet *= 2;
-		
 	}
-	
+
+	// Winning status
+	public String getStatus() {
+		return status.toString();
+	}
+
+	public void resetStatus() {
+		status = null;
+	}
+
+	public void evaluateStatus() {
+		int rank = getHand().getTotalRank();
+
+		if(rank == 21 && getHand().getNumCards() == 2) {
+			// Natural 21
+			status = Status.natural;
+		} else if(rank > 21) {
+			// Busted out
+			status = Status.busted;
+		} else {
+			// Player is safe
+			status = Status.safe;
+		}
+	}
+
 	/********************
 	 * Game playing functions that are overwritten by child classes.
 	 * Operations would differ depending on if the user were a human or CPU
@@ -100,4 +121,13 @@ public abstract class Player extends Person {
 	private String name;
 	private double funds;
 	private double bet;
+	private Status status;
+
+	// After the player has played their round, what is their ending status?
+	// Did they bust out?
+	// Did they choose to stand?
+	// Did they hit a natural (total rank of 21 on the first 2 cards)
+	private enum Status {
+		busted, safe, natural
+	};
 }

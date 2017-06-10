@@ -9,9 +9,7 @@ import java.util.Iterator;
  * Created by zach on 23/05/17.
  */
 public class GameController {
-	private int bestRank = 0;
 	private double minimumBet = 5.00;
-	private ArrayList<Player> highestRankPlayers = new ArrayList();
 
 
 	/**
@@ -31,15 +29,14 @@ public class GameController {
 		printGameInfo(dealer, players);
 
 		// Let each player make their decision, and then the dealer too
-		resetRankings();
 		play_players(deck, dealer, players);
-		int dealerRank = play_dealer(deck, dealer, players);
+		play_dealer(deck, dealer, players);
 
 		// Print the scores of each player + dealer
 		printFinalRanks(dealer, players);
 
 		// Compare to see who was the winner.
-        handleWinnings(dealerRank, dealer, players);
+        handleWinnings(dealer, players);
 
         // Collect cards from players
 		collectCards(deck, dealer, players);
@@ -53,9 +50,6 @@ public class GameController {
 
 	// Print the cards of each player, the number of cards in the deck, and the bets of each player.
 	private void printGameInfo(Dealer dealer, ArrayList<Player> players) {
-		// Print the pot to be won
-		System.out.println(String.format("Pot: $%.2f", dealer.getTotalBets()));
-
 		// Peek at the dealer's hand
 		System.out.println("Dealer");
 		System.out.println(String.format("Score: [%d + ?]", dealer.getFirstCard().getRankValue()));
@@ -85,8 +79,6 @@ public class GameController {
 
 	// Place the bets for all the players
 	private void placeBets(Dealer dealer, ArrayList<Player> players) {
-		dealer.setTotalBets(0);
-
 		// Placing bets
 		System.out.println(String.format("Place your bets (Minimum bet: $%.2f).", minimumBet));
 		for (Player p : players) {
@@ -99,27 +91,11 @@ public class GameController {
 				System.out.println("Attempted to place a bet, but the player doesn't meet the minimum funds requirement.");
 				System.out.println(e.getMessage());
 			}
-
-			// Adding bet to prize pool
-			dealer.addToTotalBets(p.getBet());
 		}
-
-		// Adding the dealer's contribution
-		double dealerBet = dealer.getTotalBets() / players.size();
-		dealer.addToTotalBets(dealerBet);
-		System.out.println(String.format("Dealer matches the average bet ($%.2f).", dealerBet));
 
 		System.out.println();
 	}
 
-	/**
-	 * Because we have the rankings and the list of highest ranking players all in member variables,
-	 * we need to reset them before each game.
-	 */
-	private void resetRankings() {
-		bestRank = 0;
-		highestRankPlayers.clear();
-	}
 
 	// Let each player make their turn
 	// This means the hit/stand/double down action phase.
@@ -128,27 +104,14 @@ public class GameController {
 
 		// Letting each player have their turn
 		for (Player p : players) {
+			// Reset the player's status before they play
+			p.resetStatus();
+
 			// Each player has their turn
 			p.play(deck, dealer, players);
 
-			// Printing this player's rank
-			currentRank = p.getHand().getTotalRank();
-
-			// Seeing if the p'th player has the highest rank (without going over 21)
-			if (currentRank < 22) {
-				if (currentRank > bestRank) {
-					// New highest rank.
-					bestRank = currentRank;
-
-					// Clear all the players in our wining list,
-					// and add the player to the list
-					highestRankPlayers.clear();
-					highestRankPlayers.add(p);
-				} else if (currentRank == bestRank) {
-					// Another player has beaten the highest rank; Add them to the winning player's list
-					highestRankPlayers.add(p);
-				}
-			}
+			// Mark down the player's status for this game (Safe? Busted out? Doubled down, and is safe? Natural 21?)
+			p.evaluateStatus();
 		}
 	}
 
@@ -185,68 +148,52 @@ public class GameController {
 
 
 	/**
-	 * Test to see who won, if anyone.
-	 * @param dealerRank
+	 * Distribute winnings amongst players
 	 * @param dealer
 	 * @param players
 	 */
-	private void handleWinnings(int dealerRank, Dealer dealer, ArrayList<Player> players) {
+	private void handleWinnings(Dealer dealer, ArrayList<Player> players) {
+		int dealerRank = dealer.getHand().getTotalRank();
 
-		// Seeing if the dealer has the highest rank (without going over 21)
-		if (dealerRank > 21) {
-			// Dealer busts: Pot split between highest ranked players
-			System.out.println("Dealer has busted!");
-			System.out.println("Winners:");
+		// Handle the winnings for each player
+		System.out.println("Winnings: ");
+		for(Player p : players) {
+			int playerRank = p.getHand().getTotalRank();
 
-			int numWinners = highestRankPlayers.size();
-			double winningsPerPlayer = dealer.getTotalBets() / numWinners;
-			for (Player p : highestRankPlayers) {
-				System.out.println(String.format("\t%s: +$%.2f", p.getName(), winningsPerPlayer));
-				p.addFunds(winningsPerPlayer);
-			}
-
-			return;
-		}
-
-		// Testing if
-		// - The dealer won, as well as 1 or more player
-		// - The dealer won
-		// - No one won
-		// - One or more players have won
-		if (dealerRank == bestRank) {
-			// Dealer matched the highest rank
-			// Divide the winnings between all the players + the dealer
-			int numWinners = highestRankPlayers.size() + 1;
-			double winningsPerPlayer = dealer.getTotalBets() / numWinners;
-
-			// Distribute winnings to players
-			for (Player p : highestRankPlayers) {
-				System.out.println(String.format("\t%s: +$%.2f", p.getName(), winningsPerPlayer));
-				p.addFunds(winningsPerPlayer);
-			}
-
-			return;
-
-		} else if (dealerRank > bestRank) {
-			// Dealer wins: Pot doesn't go to anyone
-			System.out.println("Dealer wins!");
-
-		} else if (highestRankPlayers.size() == 0) {
-			// No one wins (Everyone busted)
-			System.out.println("Everyone has busted! Bets go back to everyone.");
-
-			for (Player p : players) {
+			// Evaluating what rewards the player will get from this round
+			System.out.print("\t");
+			if(p.getStatus() == "safe" && playerRank == dealerRank)  {
+				// Push: Player is safe, AND they matched the dealer's hand
+				// Bets go back to the player.
+				System.out.println(String.format("%s: Push (+ $%.2f).", p.getName(), p.getBet()));
 				p.addFunds(p.getBet());
-			}
-		} else {
-			System.out.println("Winners:");
-			// One or more players have beaten the dealer
-			int numWinners = highestRankPlayers.size();
 
-			double winningsPerPlayer = dealer.getTotalBets() / numWinners;
-			for (Player p : highestRankPlayers) {
-				System.out.println(String.format("\t%s: +$%.2f", p.getName(), winningsPerPlayer));
-				p.addFunds(winningsPerPlayer);
+			} else if(p.getStatus() == "natural") {
+				// Natural: Player has hit 21 on their opening hand
+				// Player gets their original bet, as well as an additional 1.5 times their bet from the dealer
+				System.out.println(String.format("%s: Natural blackjack (+ $%.2f).", p.getName(), p.getBet() * 2.5));
+				p.addFunds(p.getBet() * 2.5);
+
+			} else if(p.getStatus() == "safe" && playerRank > dealerRank) {
+				// Beat the dealer: Player is safe, and they beat the dealer
+				// Player gets their original bet, as well as the dealer matching their bet.
+				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2.5));
+				p.addFunds(p.getBet() * 2);
+
+			} else if(p.getStatus() == "safe" && dealerRank > 21) {
+				// Beat the dealer: Dealer busted out, and the player is safe.
+				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2.5));
+				p.addFunds(p.getBet() * 2);
+
+
+				// -- Failure scenarios below --
+			} else if(p.getStatus() == "busted") {
+				// Player has busted out
+				System.out.println(String.format("%s: Busted out(+ $0.00).", p.getName()));
+
+			} else {
+				// The dealer has beaten the player.
+				System.out.println(String.format("%s: Beaten by the dealer (+ $0.00).", p.getName()));
 			}
 		}
 	}

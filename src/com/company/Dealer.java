@@ -1,7 +1,6 @@
 package com.company;
 
 import com.company.cards.Deck;
-import com.company.cards.Hand;
 import com.company.cards.Card;
 
 import java.util.ArrayList;
@@ -17,18 +16,6 @@ public class Dealer extends Person {
 	 */
 	public Card getFirstCard() {
 		return getHand().peek(0);
-	}
-	
-	public double getTotalBets() {
-		return totalBets;
-	}
-	
-	public void setTotalBets(double totalBets) {
-		this.totalBets = totalBets;
-	}
-	
-	public void addToTotalBets(double newBet) {
-		this.totalBets += newBet;
 	}
 
 	/**
@@ -46,7 +33,7 @@ public class Dealer extends Person {
 
 	/****
 	 * The dealer's turn at a round of blackjack.
-	 * The dealer would stand at 17.
+	 * Dealer stands on a soft 17.
 	 * @param deck
 	 * @param dealer
 	 * @param otherPlayers
@@ -103,8 +90,4 @@ public class Dealer extends Person {
 			}
 		}
 	}
-
-
-	// Sum of all bets between all the players
-	double totalBets;
 }
