@@ -10,6 +10,10 @@ public class Main {
     public static void main(String[] args) {
     	GameController gc = new GameController();
         Deck deck = new Deck();
+
+       	// After each round, can we say that there has been a winner?
+		// Or, has everyone busted out?
+        Boolean isGameOver;
 	    
         // Initializing dealer
 	    Dealer dealer = new Dealer();
@@ -29,7 +33,11 @@ public class Main {
 		do {
 			// Play a single round
 			gc.playRound(deck, dealer, players);
-			if(gc.postGameEliminationCheck(players)) {
+
+
+			// See if we can play another round
+			// ie: Do we have a single player left, or alternatively, has everyone busted out?
+			if(gc.isGameOver(players)) {
 				System.out.println("See you, space cowboy.");
 				return;
 			}
