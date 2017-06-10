@@ -1,10 +1,9 @@
 package com.company;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import com.company.Dealer;
-import com.company.Player;
 import com.company.cards.Deck;
 
 /**
@@ -20,22 +19,44 @@ public class HumanPlayer extends Player {
 	 * Stdio operation to get the bet from the user
 	 * @return
 	 */
-	public double placeBet(double minimumBet) {
+	public void placeBet(double minimumBet) throws NotEnoughFundsException {
 		Scanner in = new Scanner(System.in);
 		double betAmount;
-		
+
+		// Make sure that we have enough funds to actually place a bet
+		if(getFunds() < minimumBet) {
+			throw new NotEnoughFundsException(minimumBet, getFunds());
+		}
+
 		while(true) {
 			System.out.print(String.format("What do you want to bet? (Funds: $%.2f) ", getFunds()));
-			betAmount = in.nextDouble();
-			
-			if(betAmount > getFunds()) {
-				System.out.println("You don't have enough funds to bet that much.");
-			} else if(betAmount <= minimumBet) {
-				System.out.println(String.format("You must bet at least the minimum bet ($%.2f) ", minimumBet));
+
+			// Make sure that the user didn't input trash input
+			// ie: 100.00.00
+			// ie: Hello
+			// ie: Hanzo contributes to the wellbeing of a balanced team
+			if(in.hasNextDouble()) {
+				// Fetch the user's input
+				betAmount = in.nextDouble();
+
+				// Truncate the bet amount such that it is in proper monetary format ($xxxx.xx)
+				DecimalFormat df = new DecimalFormat("#.00");
+				betAmount = new Double(df.format(betAmount));
+
+				// Testing if the bet amount is valid
+				if(betAmount > getFunds()) {
+					System.out.print("You don't have enough funds to bet that much. ");
+				} else if(betAmount < minimumBet) {
+					System.out.print(String.format("You must bet at least the minimum bet ($%.2f) ", minimumBet));
+				} else {
+					setBet(betAmount);
+					System.out.println(String.format("%s: I'll bet $%.2f.", getName(), betAmount));
+					return;
+				}
 			} else {
-				setBet(betAmount);
-				System.out.println(String.format("%s: I'll bet $%.2f.", getName(), betAmount));
-				return betAmount;
+				// Trash input, reject it and try again.
+				in.next();
+				System.out.print("I didn't understand that. ");
 			}
 		}
 	}

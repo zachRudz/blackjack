@@ -1,8 +1,6 @@
 package com.company;
 
-import com.company.cards.CardCollection;
 import com.company.cards.Deck;
-import com.company.cards.Hand;
 
 import java.util.ArrayList;
 
@@ -93,9 +91,9 @@ public abstract class Player extends Person {
 	/********************
 	 * Game playing functions that are overwritten by child classes.
 	 * Operations would differ depending on if the user were a human or CPU
-	 * @return bet that would be placed
+	 * @return
 	 */
-	public abstract double placeBet(double minimumBet);
+	public abstract void placeBet(double minimumBet) throws NotEnoughFundsException;
 	protected abstract Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
 	
 

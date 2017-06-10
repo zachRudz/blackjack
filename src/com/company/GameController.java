@@ -13,6 +13,14 @@ public class GameController {
 	private double minimumBet = 5.00;
 	private ArrayList<Player> highestRankPlayers = new ArrayList();
 
+
+	/**
+	 * Play a single game of blackjack, using the players/dealer/deck supplied.
+	 * @param deck
+	 * @param dealer
+	 * @param players
+	 * @return True/false, depending on if there's been a winner (or everyone busted out)
+	 */
 	public void playRound(Deck deck, Dealer dealer, ArrayList players) {
 		// Prepare for the round to begin
 		deck.shuffle();
@@ -35,6 +43,12 @@ public class GameController {
 
         // Collect cards from players
 		collectCards(deck, dealer, players);
+
+		// Increase the minimum bet
+		increaseMinimumBet();
+
+		// Eliminate players if they don't have enough money for the next round
+		postGameElimination(players);
 	}
 
 	// Print the cards of each player, the number of cards in the deck, and the bets of each player.
@@ -74,10 +88,17 @@ public class GameController {
 		dealer.setTotalBets(0);
 
 		// Placing bets
-		System.out.println("Place your bets (Minimum bet: " + minimumBet + ").");
+		System.out.println(String.format("Place your bets (Minimum bet: $%.2f).", minimumBet));
 		for (Player p : players) {
 			System.out.println("[" + p.getName() + "]'s turn");
-			p.placeBet(minimumBet);
+
+			// Placing the bet
+			try {
+				p.placeBet(minimumBet);
+			} catch (NotEnoughFundsException e) {
+				System.out.println("Attempted to place a bet, but the player doesn't meet the minimum funds requirement.");
+				System.out.println(e.getMessage());
+			}
 
 			// Adding bet to prize pool
 			dealer.addToTotalBets(p.getBet());
@@ -87,9 +108,6 @@ public class GameController {
 		double dealerBet = dealer.getTotalBets() / players.size();
 		dealer.addToTotalBets(dealerBet);
 		System.out.println(String.format("Dealer matches the average bet ($%.2f).", dealerBet));
-
-		// Double the minimum bet for the next round
-		minimumBet *= 2;
 
 		System.out.println();
 	}
@@ -255,7 +273,7 @@ public class GameController {
 	 * @param players
 	 * @return Returns True/false if the game is over (everyone busted out, or 1 player remains).
 	 */
-	public boolean postGameEliminationCheck(ArrayList<Player> players) {
+	private void postGameElimination(ArrayList<Player> players) {
 		System.out.println();
 
 		// Check if any players have run out of funds; If so, eliminate them from the table
@@ -263,8 +281,10 @@ public class GameController {
 		Player tmp;
 		while(p.hasNext()) {
 			tmp = p.next();
-			if(tmp.getFunds() == 0.00) {
-				System.out.println(tmp.getName() + " is out of money; They have been eliminated!");
+
+			// Test if each person has enough funds to make the min bet
+			if(tmp.getFunds() < minimumBet) {
+				System.out.println(tmp.getName() + " doesn't have enough money to make the minimum bet; They have been eliminated!");
 				p.remove();
 			}
 		}
@@ -273,15 +293,36 @@ public class GameController {
 		if(players.size() == 0) {
 			// Everyone busted out in the last turn
 			System.out.println("All players have been eliminated!");
-			return true;
 		} else if(players.size() == 1) {
 			// One player has won.
 			System.out.println(players.get(0).getName() + " is the last player left!");
 			System.out.println(players.get(0).getName() + " has won!");
+		}
+	}
+
+
+	/**
+	 * The minimum bet should increase each round. Double the minimum bet each round.
+	 * Should occur before the postGameEliminations, since it relies on the minimum bet of the next round.
+	 */
+	private void increaseMinimumBet() {
+		// Double the minimum bet for the next round
+		minimumBet *= 2;
+	}
+
+
+	/**
+	 * Check if we've reached the end of the game.
+	 * ie: Either only 1 player remains, or all players have busted out
+	 * @param players
+	 * @return
+	 */
+	public Boolean isGameOver(ArrayList<Player> players) {
+		// Check if we've got 1 player remaining, or if everyone has busted out
+		if(players.size() < 2) {
 			return true;
 		}
 
-		// We still have players left. We can continue playing.
 		return false;
 	}
 }
