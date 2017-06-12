@@ -11,6 +11,19 @@ import static java.lang.Thread.sleep;
  * Created by zach on 23/05/17.
  */
 public class Dealer extends Person {
+	//region Constructors
+	//==================================================================================================================
+	/**
+	 * Create the dealer, and his hand.
+	 * Since the dealer can never split, their (only) hand will be created here.
+	 */
+	public Dealer() {
+		super();
+		addHand();
+	}
+	//
+
+
 	/*********************
 	 * Getters and setters
 	 */

@@ -9,9 +9,6 @@ import java.util.Iterator;
  * Created by zach on 23/05/17.
  */
 public class GameController {
-	private double minimumBet = 5.00;
-
-
 	/**
 	 * Play a single game of blackjack, using the players/dealer/deck supplied.
 	 * @param deck
@@ -30,7 +27,7 @@ public class GameController {
 
 		// Let each player make their decision, and then the dealer too
 		play_players(deck, dealer, players);
-		play_dealer(deck, dealer, players);
+		dealer.play(deck, dealer, players);
 
 		// Print the scores of each player + dealer
 		printFinalRanks(dealer, players);
@@ -48,7 +45,13 @@ public class GameController {
 		postGameElimination(players);
 	}
 
-	// Print the cards of each player, the number of cards in the deck, and the bets of each player.
+	//region Pre-game
+	//==================================================================================================================
+	/**
+	 * Print the cards of each player, the number of cards in the deck, and the bets of each player.
+	 * @param dealer
+	 * @param players
+	 */
 	private void printGameInfo(Dealer dealer, ArrayList<Player> players) {
 		// Peek at the dealer's hand
 		System.out.println("Dealer");
@@ -67,17 +70,31 @@ public class GameController {
 		System.out.println();
 	}
 
-	// Deal cards to all players + the dealer
+	/**
+	 * Deal cards to all players + the dealer
+	 * @param deck
+	 * @param dealer
+	 * @param players
+	 */
 	private void dealCards(Deck deck, Dealer dealer, ArrayList<Player> players) {
+		// Create the initial hands for each player, and deal 2 cards
 		for (Player p : players) {
-			p.draw(deck, 2);
+			p.addHand();
+			p.getHand().draw(deck, 2);
 		}
-		dealer.draw(deck, 2);
+
+		// The dealer will only ever have one hand, since they will never be able to split.
+		// Therefore, their (only) hand will be created in their constructor
+		dealer.getHand().draw(deck, 2);
 
 		System.out.println();
 	}
 
-	// Place the bets for all the players
+	/**
+	 * Place the bets for all the players
+	 * @param dealer
+	 * @param players
+	 */
 	private void placeBets(Dealer dealer, ArrayList<Player> players) {
 		// Placing bets
 		System.out.println(String.format("Place your bets (Minimum bet: $%.2f).", minimumBet));
@@ -95,10 +112,19 @@ public class GameController {
 
 		System.out.println();
 	}
+	//endregion
 
 
-	// Let each player make their turn
-	// This means the hit/stand/double down action phase.
+
+	//region During the Game
+	//==================================================================================================================
+	/**
+	 * Let each player make their turn
+	 * This means the hit/stand/double down action phase.
+	 * @param deck
+	 * @param dealer
+	 * @param players
+	 */
 	private void play_players(Deck deck, Dealer dealer, ArrayList<Player> players) {
 		int currentRank;
 
@@ -114,19 +140,12 @@ public class GameController {
 			p.evaluateStatus();
 		}
 	}
+	//endregion
 
-	private int play_dealer(Deck deck, Dealer dealer, ArrayList<Player> players) {
-		int dealerRank;
 
-		// Let the dealer play
-		dealer.play(deck,dealer,players);
 
-		// Get his rank, and print it
-		dealerRank = dealer.getHand().getTotalRank();
-
-		return dealerRank;
-	}
-
+	//region Post-Game
+	//==================================================================================================================
 	/**
 	 * Print the ranks of each player's hands
 	 * @param dealer
@@ -207,10 +226,15 @@ public class GameController {
 	 * @param players
 	 */
 	private void collectCards(Deck deck, Dealer dealer, ArrayList<Player> players) {
+		// Collecting the dealer's cards
 		deck.collectCards(dealer.getHand());
 
-		for(Player p : players)
+		for (Player p : players) {
+			// Collect all of the cards from the players, then delete all of their hands
+			// We delete all of the players' hands because they could potentially have multiple after a split
 			deck.collectCards(p.getHand());
+			p.clearHands();
+		}
 	}
 
 
@@ -273,4 +297,9 @@ public class GameController {
 
 		return false;
 	}
+	//endregion
+
+
+
+	private double minimumBet = 5.00;
 }

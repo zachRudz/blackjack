@@ -33,6 +33,11 @@ public abstract class Player extends Person {
 	public String toString() {
 		return name + String.format(" [$%.2f]", funds);
 	}
+
+	/**
+	 * Overridding hand operations
+	 */
+
 	
 	
 	/*********************
