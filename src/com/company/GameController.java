@@ -159,9 +159,9 @@ public class GameController {
 		System.out.println("Winnings: ");
 		for(Player p : players) {
 			int playerRank = p.getHand().getTotalRank();
+			System.out.print("\t");
 
 			// Evaluating what rewards the player will get from this round
-			System.out.print("\t");
 			if(p.getStatus() == "safe" && playerRank == dealerRank)  {
 				// Push: Player is safe, AND they matched the dealer's hand
 				// Bets go back to the player.
@@ -177,12 +177,13 @@ public class GameController {
 			} else if(p.getStatus() == "safe" && playerRank > dealerRank) {
 				// Beat the dealer: Player is safe, and they beat the dealer
 				// Player gets their original bet, as well as the dealer matching their bet.
-				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2.5));
+				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2));
 				p.addFunds(p.getBet() * 2);
 
 			} else if(p.getStatus() == "safe" && dealerRank > 21) {
 				// Beat the dealer: Dealer busted out, and the player is safe.
-				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2.5));
+				// Player gets their original bet, as well as the dealer matching their bet.
+				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2));
 				p.addFunds(p.getBet() * 2);
 
 
