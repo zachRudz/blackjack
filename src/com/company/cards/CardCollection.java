@@ -16,8 +16,7 @@ public abstract class CardCollection {
 			}
         }
     }
-	
-	
+
 	/*****************
 	 * Card Operations
 	 * @return

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import com.company.cards.Deck;
+import com.company.cards.Hand;
+import com.company.cards.tooFewCardsInCollectionException;
 
 /**
  * Created by zach on 23/05/17.
@@ -68,111 +70,140 @@ public class HumanPlayer extends Player {
 	 * @param dealer
 	 * @param otherPlayers
 	 */
-	public Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayers) {
+	public void play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayers) {
 		System.out.println();
 
-		// Checking if we started out with blackjack
-		if(getHand().getTotalRank() == 21) {
-			// Print the hand of this person
-			System.out.println(toString());
-			printCards();
 
-			System.out.println(String.format("%s got blackjack!", getName()));
-			System.out.println("-----------");
-			return false;
-		}
+		// When the player starts their turn, they begin with a single hand.
+		// If they decide to split, then they will get an additional hand.
+		int handNum;
+		for (handNum = 0; handNum < getNumHands(); handNum++) {
+			Hand currHand = getHand(handNum);
 
-		Boolean canDoubleDown = true;
-		int handRank;
-		
-		Boolean isValidInput;
-		String choice;
-		Scanner in = new Scanner(System.in);
-
-
-		// Checking if we have enough funds to double down
-		if(getFunds() < getBet())
-			canDoubleDown = false;
-		
-		do {
-			// Make sure that input is valid before continuing
-			isValidInput = false;
-			while(!isValidInput) {
-				// Printing the user's info
+			// Checking if we started out with blackjack
+			if (currHand.getTotalRank() == 21) {
+				// Print the hand of this person
 				System.out.println(toString());
 				printCards();
 
+				System.out.println(String.format("%s got blackjack!", getName()));
+				System.out.println("-----------");
+				break;
+			}
+
+			Boolean canDoubleDown = true;
+			int handRank;
+
+			Boolean isValidInput;
+			String choice;
+			Scanner in = new Scanner(System.in);
 
 
-				// Printing the user prompt
-				if (canDoubleDown)
-					System.out.println("[H]it / [S]tay / [D]ouble down");
-				else
-					System.out.println("[H]it / [S]tay");
-				
-				// Wait for stdin
-				System.out.print("What do you want to do? ");
-				choice = in.next();
+			// Checking if we have enough funds to double down
+			if (getFunds() < getBet())
+				canDoubleDown = false;
 
-
-				// Testing input
-				if (choice.matches("[sS]*")) {
-					// Stay: End your turn
-					System.out.println(getName() + ": I'll stay.");
-					System.out.println("-----------");
-					return false;
-					
-				} else if (choice.matches("[hH]*")) {
-					// Hit: Draw a card
-					System.out.println(getName() + ": Hit me.");
-					System.out.println("-----------");
-					getHand().draw(deck, 1);
-					isValidInput = true;
-					
-				} else if (canDoubleDown && choice.matches("[dD]*")) {
-					// Double down: Double bet, draw one card, and stay/bust
-					System.out.println(getName() + ": Double down.");
-					System.out.println("-----------");
-					
-					// Drawing a card
-					getHand().draw(deck, 1);
-					
-					// Doubling the bet for this player
-					doubleDown(dealer);
-					
-					// Evaluate cards
+			do {
+				// Make sure that input is valid before continuing
+				isValidInput = false;
+				while (!isValidInput) {
+					// Printing the user's info
 					System.out.println(toString());
 					printCards();
-					
-					if(getHand().getTotalRank() > 21) {
-						System.out.println(getName() + " has busted out!");
+
+
+					// Printing the user prompt
+					System.out.print("[H]it / [S]tay");
+					if (canDoubleDown)
+						System.out.print(" / [D]ouble down");
+					if (currHand.canSplit())
+						System.out.print(" / [X] Split");
+					System.out.println();
+
+					// Wait for stdin
+					System.out.print("What do you want to do? ");
+					choice = in.next();
+
+
+					// Testing input
+					if (choice.matches("[sS]*")) {
+						// Stay: End your turn
+						System.out.println(getName() + ": I'll stay.");
 						System.out.println("-----------");
-						return true;
+						break;
+
+					} else if (choice.matches("[hH]*")) {
+						// Hit: Draw a card
+						System.out.println(getName() + ": Hit me.");
+						System.out.println("-----------");
+						currHand.draw(deck, 1);
+						isValidInput = true;
+
+					} else if (canDoubleDown && choice.matches("[dD]*")) {
+						// Double down: Double bet, draw one card, and stay/bust
+						System.out.println(getName() + ": Double down.");
+						System.out.println("-----------");
+
+						// Drawing a card
+						currHand.draw(deck, 1);
+
+						// Doubling the bet for this player
+						doubleDown(dealer);
+
+						// Evaluate cards
+						System.out.println(toString());
+						printCards();
+
+						if (currHand.getTotalRank() > 21) {
+							System.out.println(getName() + " has busted out!");
+							System.out.println("-----------");
+							break;
+
+						} else {
+							System.out.println(getName() + " is safe!");
+							System.out.println("-----------");
+							break;
+						}
+
+					} else if (choice.matches("[xX]*")) {
+						// Split: Add a hand and split.
+						System.out.println(getName() + ": I'll split.");
+						System.out.println("-----------");
+
+						// Performing the split
+						try {
+							split(deck, currHand);
+
+						} catch (tooFewCardsInCollectionException e) {
+							System.err.println("Error: Wasn't able to split. Reason: Too few cards. ");
+							System.err.println("\tDeck count: " + deck.getNumCards() + ")");
+							System.err.println("\tOriginal hand count: " + currHand.getNumCards() + ")");
+							e.printStackTrace();
+						}
+
+						// Decrementing the hand counter.
+						// Because we just added a new card to our original hand, we could possibly be in a position to
+						// split again.
+						handNum--;
+
 					} else {
-						System.out.println(getName() + " is safe!");
-						System.out.println("-----------");
-						return false;
+						// No recognizable input
+						System.out.println("Bad input. ");
 					}
-					
-				} else {
-					// No recognizable input
-					System.out.println("Bad input. ");
-				}
-			} // Only continue if input is valid
+				} // Only continue if input is valid
 
-			// Tally up new score
-			handRank = getHand().getTotalRank();
+				// Tally up new score
+				handRank = currHand.getTotalRank();
 
-			// Can only double down on the first turn; Disable the ability to do so
-			canDoubleDown = false;
-		} while(handRank < 22); // Continue if we're still under 21 (and user didn't stay)
-		
-		// Our hand is greater than 21; We've busted out.
-		System.out.println(toString());
-		printCards();
-		System.out.println(getName() + " has busted out!");
-		System.out.println("-----------");
-		return true;
+				// Can only double down on the first turn; Disable the ability to do so
+				canDoubleDown = false;
+			} while (handRank < 22); // Continue if we're still under 21 (and user didn't stay)
+
+			// Our hand is greater than 21; We've busted out.
+			System.out.println(toString());
+			printCards();
+			System.out.println(getName() + " has busted out!");
+			System.out.println("-----------");
+		}
 	}
-
 }

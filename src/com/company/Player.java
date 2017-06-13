@@ -120,7 +120,7 @@ public abstract class Player extends Person {
 	 * @return
 	 */
 	public abstract void placeBet(double minimumBet) throws NotEnoughFundsException;
-	protected abstract Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
+	public abstract void play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
 	
 
 	private String name;

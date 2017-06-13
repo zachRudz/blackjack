@@ -4,21 +4,49 @@ package com.company.cards;
  * Created by zach on 20/05/17.
  */
 public class Hand extends CardCollection {
+	//region Constructor
+	//==================================================================================================================
 	public Hand() {
 		super();
 		maxNumCards = 7;
 		cards = new Card[maxNumCards];
 	}
-	
-	public void draw(Deck source, int numCardsToDraw) {
+	//endregion
+
+
+	//region Cards
+	//==================================================================================================================
+
+	/**
+	 * Move $numCardsToDraw from the source deck to the hand.
+	 * @param source
+	 * @param numCardsToDraw
+	 */
+	public void draw(CardCollection source, int numCardsToDraw) {
 		while(numCardsToDraw > 0 && source.numCards > 0) {
 			push(source.pop());
 			numCardsToDraw--;
 		}
 
 	}
-	
-	// Sum up the scores of the cards in your hand, according to blackjack rules
+
+
+	/**
+	 * Print cards in hand, and also the score of the cards in the hand
+	 */
+	public void printCards() {
+		System.out.println("Score: [" + getTotalRank() + "]");
+		super.printCards();
+	}
+	//endregion
+
+
+	//region Rank
+	//==================================================================================================================
+	/**
+	 * Sum up the scores of the cards in your hand, according to blackjack rules
+	 * @return
+	 */
 	public int getTotalRank() {
 		int numAces = 0, totalRank = 0;
 		
@@ -39,16 +67,24 @@ public class Hand extends CardCollection {
 			// If we don't go over 21, then treat the ace as an 11 instead of the default 1.
 			if((totalRank + 10) < 22) {
 				totalRank += 10;
-			}
+
+				}
 			numAces--;
 		}
 		
 		return totalRank;
 	}
-	
-	// Print cards in hand, and also the score of the cards in the hand
-	public void printCards() {
-		System.out.println("Score: [" + getTotalRank() + "]");
-		super.printCards();
+
+	/**
+	 * Given our starting hand, evaluate whether or not we can split.
+	 * This means that our starting 2 cards must have the same rank (ie: Jack of hearts, 10 of diamonds)
+	 * @return Returns true or false depending on if we can split with this hand
+	 */
+	public Boolean canSplit() {
+		if(getNumCards() == 2)
+			return cards[0].getRankValue() == cards[1].getRankValue();
+
+		return false;
 	}
+	//endregion
 }
