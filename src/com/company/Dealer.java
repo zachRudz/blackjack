@@ -57,6 +57,7 @@ public class Dealer extends Person {
 
 		int totalRank, highestValidRank = 0;
 
+		// TODO: Iterate through all of the players' hands, instead of just the first one
 		// Search through all of the other players, and see who has the highest (valid) hand
 		for(Player p : otherPlayers) {
 			// See if this player has a higher rank than the previous highest

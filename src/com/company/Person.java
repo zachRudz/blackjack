@@ -63,39 +63,6 @@ abstract public class Person {
 	}
 
 
-	/**
-	 * Given the deck, and the original hand that the player will split with:
-	 * 1. Create a new hand for the player
-	 * 2. Give the new hand one of the cards from the original hand
-	 * 3. Distribute a new card to each of the hands from the deck.
-	 * @param deck The deck to draw cards from after the split occurs
-	 * @param originalHand The hand to split with
-	 */
-	void split(CardCollection deck, Hand originalHand) throws tooFewCardsInCollectionException {
-		// Making sure that the original hand has enough cards
-		if(originalHand.getNumCards() != 2) {
-			System.err.println("Error: Not enough cards in the original hand");
-			throw new tooFewCardsInCollectionException();
-		}
-
-		// Also making sure that the deck has enough cards
-		if(deck.getNumCards() < 2) {
-			System.err.println("Error: Not enough cards in the deck to draw (numCards: " + deck.getNumCards() + ")");
-			throw new tooFewCardsInCollectionException();
-		}
-
-
-		// Create the new hand
-		addHand();
-		Hand newHand = hands.get(hands.size() - 1);
-
-		// Transfer one of the cards to the new hand...
-		newHand.draw(originalHand, 1);
-
-		// .. And have each hand draw a new card
-		originalHand.draw(deck, 1);
-		newHand.draw(deck, 1);
-	}
 
 
 	/**
