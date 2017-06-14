@@ -17,7 +17,6 @@ public class HumanPlayer extends Player {
 	}
 
 	// TODO: Make the text output for split hands more clear. It looks like it's functional, but not readable.
-	// TODO: Fix the payouts so they're on a per-hand basis, not a per-player basis.
 	/*******************
 	 * Before starting a round, we must place an initial bet.
 	 * Stdio operation to get the bet from the user
@@ -147,6 +146,7 @@ public class HumanPlayer extends Player {
 						} else if (canDoubleDown && choice.matches("[dD]*")) {
 							// Double down: Double bet, draw one card, and stay/bust
 							doubleDown(deck, currHand);
+							isValidInput = true;
 							continuePlayingRound = false;
 
 						} else if (currHand.canSplit() && choice.matches("[xX]*")) {

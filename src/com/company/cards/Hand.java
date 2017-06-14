@@ -10,6 +10,7 @@ public class Hand extends CardCollection {
 		super();
 		maxNumCards = 7;
 		cards = new Card[maxNumCards];
+		status = null;
 	}
 	//endregion
 
@@ -19,8 +20,8 @@ public class Hand extends CardCollection {
 
 	/**
 	 * Move $numCardsToDraw from the source deck to the hand.
-	 * @param source
-	 * @param numCardsToDraw
+	 * @param source Source of cards to draw
+	 * @param numCardsToDraw How many cards to draw
 	 */
 	public void draw(CardCollection source, int numCardsToDraw) {
 		while(numCardsToDraw > 0 && source.numCards > 0) {
@@ -45,7 +46,7 @@ public class Hand extends CardCollection {
 	//==================================================================================================================
 	/**
 	 * Sum up the scores of the cards in your hand, according to blackjack rules
-	 * @return
+	 * @return The total rank of the hand
 	 */
 	public int getTotalRank() {
 		int numAces = 0, totalRank = 0;
@@ -74,17 +75,56 @@ public class Hand extends CardCollection {
 		
 		return totalRank;
 	}
+	//endregion
 
+
+	//region Splitting
+	//==================================================================================================================
 	/**
 	 * Given our starting hand, evaluate whether or not we can split.
 	 * This means that our starting 2 cards must have the same rank (ie: Jack of hearts, 10 of diamonds)
 	 * @return Returns true or false depending on if we can split with this hand
 	 */
 	public Boolean canSplit() {
-		if(getNumCards() == 2)
-			return cards[0].getRankValue() == cards[1].getRankValue();
+		return (getNumCards() == 2) && cards[0].getRankValue() == cards[1].getRankValue();
 
-		return false;
 	}
 	//endregion
+
+
+	//region Statuses
+	//==================================================================================================================
+	public String getStatus() {
+		return status.toString();
+	}
+
+	/**
+	 * Evalutates a player's hand, to see how it faired.
+	 */
+	public void evaluateStatus() {
+		int rank = getTotalRank();
+
+		if(rank == 21 && getNumCards() == 2) {
+			// Natural 21
+			status = Status.natural;
+		} else if(rank > 21) {
+			// Busted out
+			status = Status.busted;
+		} else {
+			// Player is safe
+			status = Status.safe;
+		}
+	}
+	//endregion
+
+
+	private Status status;
+
+	// After the player has played their round, what is their ending status?
+	// Did they bust out?
+	// Did they choose to stand?
+	// Did they hit a natural (total rank of 21 on the first 2 cards)
+	private enum Status {
+		busted, safe, natural
+	};
 }

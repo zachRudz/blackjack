@@ -2,47 +2,53 @@ package com.company;
 
 import com.company.cards.Deck;
 import com.company.cards.Card;
+import com.company.cards.Hand;
 
 import java.util.ArrayList;
 
 import static java.lang.Thread.sleep;
 
 /**
+ * The dealer of a game of blackjack.
  * Created by zach on 23/05/17.
  */
 public class Dealer extends Person {
-	//region Constructors
-	//==================================================================================================================
 	/**
 	 * Create the dealer, and his hand.
 	 * Since the dealer can never split, their (only) hand will be created here.
 	 */
-	public Dealer() {
+	Dealer() {
 		super();
 		addHand();
 	}
-	//
 
-
-	/*********************
-	 * Getters and setters
-	 */
-	public Card getFirstCard() {
-		return getHand().peek(0);
-	}
 
 	/**
 	 * Prints the dealer's hand, and his score
-	 * @return
+	 * @return A textual representation of the dealer.
 	 */
 	public String toString() {
 		return "Dealer";
 	}
 
+	//region Cards
+	//==================================================================================================================
+	/**
+	 * Peek operation, showing only the first card in the dealer's hand
+	 * @return the first card of the dealer's hand
+	 */
+	Card getFirstCard() {
+		return getHand().peek(0);
+	}
+
+	/**
+	 * Print the dealer's hand to stdout
+	 */
 	public void printCards() {
 		System.out.println(String.format("Score: [%d]", getHand().getTotalRank()));
 		getHand().printCards();
 	}
+	//endregion
 
 	/****
 	 * The dealer's turn at a round of blackjack.
@@ -57,13 +63,16 @@ public class Dealer extends Person {
 
 		int totalRank, highestValidRank = 0;
 
-		// TODO: Iterate through all of the players' hands, instead of just the first one
 		// Search through all of the other players, and see who has the highest (valid) hand
 		for(Player p : otherPlayers) {
-			// See if this player has a higher rank than the previous highest
-			int pRank = p.getHand().getTotalRank();
-			if(pRank < 22 && pRank > highestValidRank) {
-				highestValidRank = pRank;
+			// Search through all of the players' hands (in the event of a split)
+			for(Hand h : p.getAllHands()) {
+				// See if this player has a higher rank than the previous highest
+				int currentPlayerHandRank = h.getTotalRank();
+
+				if (currentPlayerHandRank < 22 && currentPlayerHandRank > highestValidRank) {
+					highestValidRank = currentPlayerHandRank;
+				}
 			}
 		}
 
