@@ -13,11 +13,10 @@ import com.company.cards.tooFewCardsInCollectionException;
  * Created by zach on 23/05/17.
  */
 public class HumanPlayer extends Player {
-	public HumanPlayer(String name, double initialFunds) {
+	HumanPlayer(String name, double initialFunds) {
 		super(name, initialFunds);
 	}
 
-	// TODO: Make the text output for split hands more clear. It looks like it's functional, but not readable.
 	/*******************
 	 * Before starting a round, we must place an initial bet.
 	 * Stdio operation to get the bet from the user
@@ -85,7 +84,8 @@ public class HumanPlayer extends Player {
 			if(testForNatural(currHand)) {
 				// Print the current hand
 				System.out.println(toString());
-				printCards();
+				System.out.println(String.format(" Hand [%d / %d]", handNum+1, getNumHands()));
+				currHand.printCards();
 
 				System.out.println(String.format("%s got blackjack!", getName()));
 				System.out.println("-----------");
@@ -111,8 +111,9 @@ public class HumanPlayer extends Player {
 					isValidInput = false;
 					while (!isValidInput) {
 						// Printing the user's info
-						System.out.println(toString());
-						printCards();
+						System.out.print(toString());
+						System.out.println(String.format(" Hand [%d / %d]", handNum+1, getNumHands()));
+						currHand.printCards();
 
 
 						// Printing the user prompt
@@ -158,6 +159,10 @@ public class HumanPlayer extends Player {
 							// split again.
 							handNum--;
 
+							// Printing all of the user's hands now that they've split.
+							printCards();
+							System.out.println("-----------");
+
 							isValidInput = true;
 							continuePlayingRound = false;
 
@@ -182,7 +187,7 @@ public class HumanPlayer extends Player {
 				// Our hand is greater than 21; We've busted out.
 				if(handRank > 21) {
 					System.out.println(toString());
-					printCards();
+					currHand.printCards();
 					System.out.println(getName() + " has busted out!");
 					System.out.println("-----------");
 				}
@@ -234,7 +239,7 @@ public class HumanPlayer extends Player {
 
 	private void split(Deck deck, Hand currHand) {
 		System.out.println(getName() + ": I'll split.");
-		System.out.println("-----------");
+		System.out.println();
 
 		// Performing the split
 		try {

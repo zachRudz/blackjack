@@ -155,13 +155,19 @@ class GameController {
 	 * @param players The collection of players that will play against the dealer
 	 */
 	private void printFinalRanks(Dealer dealer, ArrayList<Player> players) {
+		int handNum;
+
 		System.out.println();
 		System.out.println("Final scores:");
 
 		// Printing players' rank
 		for(Player p : players) {
+			handNum = 1;
 			for(Hand h : p.getAllHands()) {
-				System.out.println(String.format("\t%s [%d]", p.getName(), h.getTotalRank()));
+				// Printing player name, their hand number, and the rank of that hand
+				// We print the hand number because a player would have more than one after a split.
+				System.out.println(String.format("\t%s [Hand %d] [%d]", p.getName(), handNum, h.getTotalRank()));
+				handNum++;
 			}
 		}
 
@@ -178,54 +184,60 @@ class GameController {
 	 */
 	private void handleWinnings(Dealer dealer, ArrayList<Player> players) {
 		int dealerRank = dealer.getHand().getTotalRank();
+		int handNum;
 
 		/* Handle the winnings for each player */
 		System.out.println("Winnings: ");
 		for(Player p : players) {
+			handNum = 1;
+
 			for(Hand h : p.getAllHands()) {
+				System.out.print(String.format("\t%s [Hand %d]: ", p.getName(), handNum));
 
 				// Mark down the player's status for this game (Safe? Busted out? Doubled down, and is safe? Natural 21?)
 				// Do this for each of the players' hands
 				h.evaluateStatus();
 
 				int playerHandRank = h.getTotalRank();
-				System.out.print("\t");
 
 				// Evaluating what rewards the player will get from this round
 				if (Objects.equals(h.getStatus(), "safe") && playerHandRank == dealerRank) {
 					// Push: Player is safe, AND they matched the dealer's hand
 					// Bets go back to the player.
-					System.out.println(String.format("%s: Push (+ $%.2f).", p.getName(), h.getBet()));
+					System.out.println(String.format("Push (+ $%.2f).", h.getBet()));
 					p.addFunds(h.getBet());
 
 				} else if (Objects.equals(h.getStatus(), "natural")) {
 					// Natural: Player has hit 21 on their opening hand
 					// Player gets their original bet, as well as an additional 1.5 times their bet from the dealer
-					System.out.println(String.format("%s: Natural blackjack (+ $%.2f).", p.getName(), h.getBet() * 2.5));
+					System.out.println(String.format("Natural blackjack (+ $%.2f).", h.getBet() * 2.5));
 					p.addFunds(h.getBet() * 2.5);
 
 				} else if (Objects.equals(h.getStatus(), "safe") && playerHandRank > dealerRank) {
 					// Beat the dealer: Player is safe, and they beat the dealer
 					// Player gets their original bet, as well as the dealer matching their bet.
-					System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), h.getBet() * 2));
+					System.out.println(String.format("Beat the dealer (+ $%.2f).", h.getBet() * 2));
 					p.addFunds(h.getBet() * 2);
 
 				} else if (Objects.equals(h.getStatus(), "safe") && dealerRank > 21) {
 					// Beat the dealer: Dealer busted out, and the player is safe.
 					// Player gets their original bet, as well as the dealer matching their bet.
-					System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), h.getBet() * 2));
+					System.out.println(String.format("Beat the dealer (+ $%.2f).", h.getBet() * 2));
 					p.addFunds(h.getBet() * 2);
 
 
 					// -- Failure scenarios below --
 				} else if (Objects.equals(h.getStatus(), "busted")) {
 					// Player has busted out
-					System.out.println(String.format("%s: Busted out(+ $0.00).", p.getName()));
+					System.out.println("Busted out(+ $0.00).");
 
 				} else {
 					// The dealer has beaten the player.
-					System.out.println(String.format("%s: Beaten by the dealer (+ $0.00).", p.getName()));
+					System.out.println("Beaten by the dealer (+ $0.00).");
 				}
+
+				// Moving on to the next hand (rather, incrementing the ID of the hand, just for printing).
+				handNum++;
 			}
 		}
 	}
