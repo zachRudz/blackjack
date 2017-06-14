@@ -1,16 +1,22 @@
 package com.company.cards;
 
+import com.company.Player;
+
 /**
+ * The hand that is used by either a player or a dealer.
+ * Some operations can only be used by a player (betting), since the dealer would never have a use for a betting mechanism
  * Created by zach on 20/05/17.
  */
 public class Hand extends CardCollection {
 	//region Constructor
 	//==================================================================================================================
-	public Hand() {
+	private Hand() {};
+	public Hand(Player owner) {
 		super();
 		maxNumCards = 7;
 		cards = new Card[maxNumCards];
 		status = null;
+		this.owner = owner;
 	}
 	//endregion
 
@@ -117,8 +123,41 @@ public class Hand extends CardCollection {
 	}
 	//endregion
 
+	//region Bets
+	//==================================================================================================================
+	// The player's bet for the k'th round
+	public void setBet(double bet) {
+		if(owner == null) {
+			System.err.println("Error: The dealer cannot double down.");
+			return;
+		}
 
-	private Status status;
+		if(bet > owner.getFunds()) {
+			throw new ArithmeticException("Not enough funds to bet that much!");
+		}
+
+		this.bet = bet;
+		owner.removeFunds(bet);
+	}
+
+	public double getBet() { return bet; }
+
+	public void doubleDown() {
+		if(owner == null) {
+			System.err.println("Error: The dealer cannot double down.");
+			return;
+		}
+
+		// Throw an exception if we can't double down
+		if(bet > owner.getFunds()) {
+			throw new ArithmeticException("Not enough funds to double down!");
+		}
+
+		// Double the bet on our end
+		owner.removeFunds(bet);
+		bet *= 2;
+	}
+	//endregion
 
 	// After the player has played their round, what is their ending status?
 	// Did they bust out?
@@ -127,4 +166,14 @@ public class Hand extends CardCollection {
 	private enum Status {
 		busted, safe, natural
 	};
+
+
+	private Status status;
+	private double bet;
+
+	/*
+	In the case of the dealer, this will be null. This is because all references to the owner will be in use cases for
+	accessing the owner's bet. The dealer has no bet, and so the bet functions are not defined here.
+	 */
+	private Player owner;
 }

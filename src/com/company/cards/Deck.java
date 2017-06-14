@@ -1,11 +1,12 @@
 package com.company.cards;
 
 /**
+ * A standard deck of 52 cards
  * Created by zach on 20/05/17.
  */
 public class Deck extends CardCollection {
     private static final int NUM_CARDS_IN_STANDARD_DECK = 52;
-    
+
     public Deck() {
         maxNumCards = NUM_CARDS_IN_STANDARD_DECK;
         numCards = NUM_CARDS_IN_STANDARD_DECK;
@@ -29,11 +30,10 @@ public class Deck extends CardCollection {
     // Move all the cards from the source to this deck
 	// Returns the number of cards in the source collection that couldn't be collected.
 	//  This only would happen if the deck is too full.
-    public int collectCards(CardCollection source) {
+    public void collectCards(CardCollection source) {
     	while(source.getNumCards() > 0 && numCards < maxNumCards) {
     		push(source.pop());
 	    }
-	    
-	    return source.getNumCards();
-    }
+
+	}
 }

@@ -9,6 +9,7 @@ import com.company.cards.Hand;
 import com.company.cards.tooFewCardsInCollectionException;
 
 /**
+ * A human playing a game of blackjack.
  * Created by zach on 23/05/17.
  */
 public class HumanPlayer extends Player {
@@ -20,7 +21,6 @@ public class HumanPlayer extends Player {
 	/*******************
 	 * Before starting a round, we must place an initial bet.
 	 * Stdio operation to get the bet from the user
-	 * @return
 	 */
 	public void placeBet(double minimumBet) throws NotEnoughFundsException {
 		Scanner in = new Scanner(System.in);
@@ -52,7 +52,7 @@ public class HumanPlayer extends Player {
 				} else if(betAmount < minimumBet) {
 					System.out.print(String.format("You must bet at least the minimum bet ($%.2f) ", minimumBet));
 				} else {
-					setBet(betAmount);
+					getHand(0).setBet(betAmount);
 					System.out.println(String.format("%s: I'll bet $%.2f.", getName(), betAmount));
 					return;
 				}
@@ -67,9 +67,9 @@ public class HumanPlayer extends Player {
 	/**********************
 	 * Perform the interactive part of the game
 	 * IE: Hit/stand/stay/double down
-	 * @param deck
-	 * @param dealer
-	 * @param otherPlayers
+	 * @param deck The deck that will be used to play the game
+	 * @param dealer The dealer that the players will play against
+	 * @param otherPlayers The collection of players that will play against the dealer
 	 */
 	public void play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayers) {
 		System.out.println();
@@ -103,7 +103,7 @@ public class HumanPlayer extends Player {
 
 
 				// Checking if we have enough funds to double down
-				if (getFunds() < getBet())
+				if (getFunds() < currHand.getBet())
 					canDoubleDown = false;
 
 				do {
@@ -203,8 +203,8 @@ public class HumanPlayer extends Player {
 
 	/**
 	 * Perform the actions required for a double down.
-	 * @param deck
-	 * @param currHand
+	 * @param deck The deck that will be used to play the game
+	 * @param currHand The hand to double down with
 	 */
 	private void doubleDown(Deck deck, Hand currHand) {
 		System.out.println(getName() + ": Double down.");
@@ -214,7 +214,7 @@ public class HumanPlayer extends Player {
 		currHand.draw(deck, 1);
 
 		// Handling the betting half of the double down
-		super.doubleDown();
+		currHand.doubleDown();
 
 		// Evaluate cards
 		System.out.println(toString());
@@ -232,7 +232,7 @@ public class HumanPlayer extends Player {
 
 	}
 
-	public void split(Deck deck, Hand currHand) {
+	private void split(Deck deck, Hand currHand) {
 		System.out.println(getName() + ": I'll split.");
 		System.out.println("-----------");
 

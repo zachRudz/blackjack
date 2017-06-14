@@ -4,12 +4,14 @@ import com.company.cards.Card;
 import com.company.cards.Deck;
 import com.company.cards.Hand;
 import com.company.cards.tooFewCardsInCollectionException;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Testing for the player class. Mostly tests are for hand splitting operations
  * Created by zach on 13/06/17.
  */
 class PlayerTest {
@@ -26,7 +28,7 @@ class PlayerTest {
 	void split_correctNumberOfCardsInHand() {
 		try {
 			// Creating a fake deck, which will distribute cards that can be split
-			Hand pseudoDeck = new Hand();
+			Hand pseudoDeck = new Hand(p);
 
 			Card c = new Card();
 			c.setRank(Card.Rank.TEN);
@@ -56,7 +58,7 @@ class PlayerTest {
 		} catch (tooFewCardsInCollectionException e) {
 			// Something went wrong; Could not split due to card counts
 			e.printStackTrace();
-			assertTrue(false);
+			fail("Too few cards in collection (Either from the deck, or the original hand.");
 		}
 	}
 
@@ -64,7 +66,7 @@ class PlayerTest {
 	void split_correctNumberOfHands() {
 		try {
 			// Creating a fake deck, which will distribute cards that can be split
-			Hand pseudoDeck = new Hand();
+			Hand pseudoDeck = new Hand(null);
 
 			// We will be creating 3 "splittable" cards, and 1 "non-splittable" card
 			// The end result will be an opening hand of [10H, JH]
@@ -125,7 +127,7 @@ class PlayerTest {
 		} catch (tooFewCardsInCollectionException e) {
 			// Something went wrong; Could not split due to card counts
 			e.printStackTrace();
-			assertTrue(false);
+			fail("Too few cards in collection (Either from the deck, or the original hand.");
 		}
 	}
 }

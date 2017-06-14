@@ -2,6 +2,7 @@ package com.company.cards;
 import java.util.Random;
 
 /**
+ * A collection of standard playing cards.
  * Created by zach on 20/05/17.
  */
 public abstract class CardCollection {
@@ -17,28 +18,24 @@ public abstract class CardCollection {
         }
     }
 
-	/*****************
-	 * Card Operations
-	 * @return
-	 */
-    // Peeks at the card at the top of the collection (LIFO)
+    //region Cards
+	//==================================================================================================================
+	/**
+	 * Peeks at the card at the top of the collection (LIFO)
+	 * @return the card at the top of this collection
+	*/
 	public Card peek() {
 		if(numCards > 1)
 			return cards[numCards - 1];
 		
 		return null;
 	}
-	
-	// Peeks at the card at position k
-    public Card peek(int position) {
-        if(position >= numCards)
-	        return null;
-        
-        return cards[position];
-    }
-    
-    // Removes the card at the top of the deck, returns it
-    public Card pop() {
+
+	/**
+	 * Removes the card at the top of the deck, returns it
+	 * @return The card at the top of the deck
+	 */
+	Card pop() {
         try {
             // Make sure we have a card to give away
             if(numCards < 1)
@@ -48,13 +45,16 @@ public abstract class CardCollection {
             Card tmp = cards[--numCards];   // Get the card at the top of the deck
             cards[numCards] = null;       // Null out the pointer in our decklist
             return tmp;
-        } catch(Exception e){
+        } catch(tooFewCardsInCollectionException e){
             System.out.println(e);
 	        return null;
         }
     }
     
-    // Add a card to the top of the deck
+	/**
+	 * Add a card to the top of the deck
+	 * @param c Card to add to the deck
+	 */
     public void push(Card c) {
         try {
             // Make sure we have enough space to add a card to our collection
@@ -67,7 +67,10 @@ public abstract class CardCollection {
         }
     }
     
-    // Shuffle the deck in place
+
+	/**
+	 * Shuffle the deck in place
+	 */
     public void shuffle() {
         Card tmp;
         Random rand = new Random();
@@ -88,19 +91,12 @@ public abstract class CardCollection {
     public int getNumCards() {
         return numCards;
     }
-    
-    public void setNumCards(int numCards) {
-        this.numCards = numCards;
-    }
-    
-    public int getMaxNumCards() {
+
+	public int getMaxNumCards() {
         return maxNumCards;
     }
+	//endregion
     
-    public void setMaxNumCards(int maxNumCards) {
-        this.maxNumCards = maxNumCards;
-    }
-    
-    protected int numCards, maxNumCards;
+    int numCards, maxNumCards;
     protected Card[] cards;
 }

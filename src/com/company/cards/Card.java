@@ -1,6 +1,7 @@
 package com.company.cards;
 
 /**
+ * A single standard card
  * Created by zach on 20/05/17.
  */
 public class Card {
@@ -39,7 +40,7 @@ public class Card {
         this.suit = suit;
     }
 
-    public Rank getRank() {
+    Rank getRank() {
         return rank;
     }
     

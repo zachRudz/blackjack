@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class HandTest {
 	@Test
 	void canSplit_DifferentFaceValues() {
-		Hand h = new Hand();
+		Hand h = new Hand(null);
 
 		// Creating cards of different suits and face values
 		Card c = new Card();
@@ -28,7 +28,7 @@ class HandTest {
 
 	@Test
 	void canSplit_DifferentRanks() {
-		Hand h = new Hand();
+		Hand h = new Hand(null);
 
 		// Creating cards of different suits and face values
 		Card c = new Card();

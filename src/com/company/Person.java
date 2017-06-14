@@ -1,8 +1,6 @@
 package com.company;
 
-import com.company.cards.CardCollection;
 import com.company.cards.Hand;
-import com.company.cards.tooFewCardsInCollectionException;
 
 import java.util.ArrayList;
 
@@ -52,7 +50,7 @@ abstract public class Person {
 	 * Create a hand
 	 */
 	void addHand() {
-		hands.add(new Hand());
+		hands.add(new Hand(null));
 	}
 
 	/**
@@ -81,5 +79,5 @@ abstract public class Person {
 	* If the player were to split, then a new hand would be added to the arraylist. At the end of the round, it would be
  	* deleted.
 	*/
-	private ArrayList<Hand> hands;
+	ArrayList<Hand> hands;
 }

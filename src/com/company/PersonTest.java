@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Testing for the abstract Person class.
  * Created by zach on 12/06/17.
  */
 class PersonTest {
-	Deck d;
-	Person p;
+	private Deck d;
+	private Person p;
 
 	@BeforeEach
 	void setUp() {

@@ -6,8 +6,6 @@ import com.company.cards.Hand;
 
 import java.util.ArrayList;
 
-import static java.lang.Thread.sleep;
-
 /**
  * The dealer of a game of blackjack.
  * Created by zach on 23/05/17.
@@ -38,7 +36,7 @@ public class Dealer extends Person {
 	 * @return the first card of the dealer's hand
 	 */
 	Card getFirstCard() {
-		return getHand().peek(0);
+		return getHand().peek();
 	}
 
 	/**
@@ -53,12 +51,10 @@ public class Dealer extends Person {
 	/****
 	 * The dealer's turn at a round of blackjack.
 	 * Dealer stands on a soft 17.
-	 * @param deck
-	 * @param dealer
-	 * @param otherPlayers
-	 * @return
+	 * @param deck The deck that will be used to play the game
+	 * @param otherPlayers The collection of players that will play against the dealer
 	 */
-	protected Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayers) {
+	void play(Deck deck, ArrayList<Player> otherPlayers) {
 		System.out.println();
 
 		int totalRank, highestValidRank = 0;
@@ -89,21 +85,22 @@ public class Dealer extends Person {
 			if(totalRank > 21) {
 				System.out.println("The dealer has busted!");
 				System.out.println("-----------");
-				return true;
+				return;
 			}
 
 			// If our hand beats the other player's highest rank, then we'll just stay with what we have, without drawing
 			if(totalRank > highestValidRank) {
 				System.out.println("Dealer: I'll stay.");
 				System.out.println("-----------");
-				return false;
+				return;
 			}
 
 			// If our rank is larger than 17, we should stay with what we have.
 			if(totalRank >= 17) {
 				System.out.println("Dealer: I'll stay.");
 				System.out.println("-----------");
-				return false;
+				return;
+
 			} else {
 				// Our rank is still lower than one/more of the other players.
 				// If it's reasonable that we should draw, then do it; Then check if we've busted
