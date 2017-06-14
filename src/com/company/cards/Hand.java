@@ -1,24 +1,59 @@
 package com.company.cards;
 
+import com.company.Player;
+
 /**
+ * The hand that is used by either a player or a dealer.
+ * Some operations can only be used by a player (betting), since the dealer would never have a use for a betting mechanism
  * Created by zach on 20/05/17.
  */
 public class Hand extends CardCollection {
-	public Hand() {
+	//region Constructor
+	//==================================================================================================================
+	private Hand() {};
+	public Hand(Player owner) {
 		super();
 		maxNumCards = 7;
 		cards = new Card[maxNumCards];
+		status = null;
+		this.owner = owner;
 	}
-	
-	public void draw(Deck source, int numCardsToDraw) {
+	//endregion
+
+
+	//region Cards
+	//==================================================================================================================
+
+	/**
+	 * Move $numCardsToDraw from the source deck to the hand.
+	 * @param source Source of cards to draw
+	 * @param numCardsToDraw How many cards to draw
+	 */
+	public void draw(CardCollection source, int numCardsToDraw) {
 		while(numCardsToDraw > 0 && source.numCards > 0) {
 			push(source.pop());
 			numCardsToDraw--;
 		}
 
 	}
-	
-	// Sum up the scores of the cards in your hand, according to blackjack rules
+
+
+	/**
+	 * Print cards in hand, and also the score of the cards in the hand
+	 */
+	public void printCards() {
+		System.out.println("Score: [" + getTotalRank() + "]");
+		super.printCards();
+	}
+	//endregion
+
+
+	//region Rank
+	//==================================================================================================================
+	/**
+	 * Sum up the scores of the cards in your hand, according to blackjack rules
+	 * @return The total rank of the hand
+	 */
 	public int getTotalRank() {
 		int numAces = 0, totalRank = 0;
 		
@@ -39,16 +74,106 @@ public class Hand extends CardCollection {
 			// If we don't go over 21, then treat the ace as an 11 instead of the default 1.
 			if((totalRank + 10) < 22) {
 				totalRank += 10;
-			}
+
+				}
 			numAces--;
 		}
 		
 		return totalRank;
 	}
-	
-	// Print cards in hand, and also the score of the cards in the hand
-	public void printCards() {
-		System.out.println("Score: [" + getTotalRank() + "]");
-		super.printCards();
+	//endregion
+
+
+	//region Splitting
+	//==================================================================================================================
+	/**
+	 * Given our starting hand, evaluate whether or not we can split.
+	 * This means that our starting 2 cards must have the same rank (ie: Jack of hearts, 10 of diamonds)
+	 * @return Returns true or false depending on if we can split with this hand
+	 */
+	public Boolean canSplit() {
+		return (getNumCards() == 2) && cards[0].getRankValue() == cards[1].getRankValue();
+
 	}
+	//endregion
+
+
+	//region Statuses
+	//==================================================================================================================
+	public String getStatus() {
+		return status.toString();
+	}
+
+	/**
+	 * Evalutates a player's hand, to see how it faired.
+	 */
+	public void evaluateStatus() {
+		int rank = getTotalRank();
+
+		if(rank == 21 && getNumCards() == 2) {
+			// Natural 21
+			status = Status.natural;
+		} else if(rank > 21) {
+			// Busted out
+			status = Status.busted;
+		} else {
+			// Player is safe
+			status = Status.safe;
+		}
+	}
+	//endregion
+
+	//region Bets
+	//==================================================================================================================
+	// The player's bet for the k'th round
+	public void setBet(double bet) {
+		if(owner == null) {
+			System.err.println("Error: The dealer cannot double down.");
+			return;
+		}
+
+		if(bet > owner.getFunds()) {
+			throw new ArithmeticException("Not enough funds to bet that much!");
+		}
+
+		this.bet = bet;
+		owner.removeFunds(bet);
+	}
+
+	public double getBet() { return bet; }
+
+	public void doubleDown() {
+		if(owner == null) {
+			System.err.println("Error: The dealer cannot double down.");
+			return;
+		}
+
+		// Throw an exception if we can't double down
+		if(bet > owner.getFunds()) {
+			throw new ArithmeticException("Not enough funds to double down!");
+		}
+
+		// Double the bet on our end
+		owner.removeFunds(bet);
+		bet *= 2;
+	}
+	//endregion
+
+	// After the player has played their round, what is their ending status?
+	// Did they bust out?
+	// Did they choose to stand?
+	// Did they hit a natural (total rank of 21 on the first 2 cards)
+	private enum Status {
+		busted, safe, natural
+	};
+
+
+	private Status status;
+	private double bet;
+
+	/*
+	In the case of the dealer, this will be null. This is because all references to the owner will be in use cases for
+	accessing the owner's bet. The dealer has no bet, and so the bet functions are not defined here.
+	 */
+	private Player owner;
 }

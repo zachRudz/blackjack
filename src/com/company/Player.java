@@ -1,6 +1,9 @@
 package com.company;
 
+import com.company.cards.CardCollection;
 import com.company.cards.Deck;
+import com.company.cards.Hand;
+import com.company.cards.tooFewCardsInCollectionException;
 
 import java.util.ArrayList;
 
@@ -9,15 +12,6 @@ import java.util.ArrayList;
  * Created by zach on 23/05/17.
  */
 public abstract class Player extends Person {
-	/**************
-	 * Constructors
-	 * @param name
-	 */
-	public Player(String name) {
-		super();
-		this.name = name;
-	}
-	
 	public Player(String name, double startingFunds) {
 		super();
 		this.name = name;
@@ -27,29 +21,29 @@ public abstract class Player extends Person {
 	
 	
 	/********************
-	 * General operations
-	 * @return
+	 * Returns a string representation of the player.
+	 * @return {name} [${funds}]
 	 */
 	public String toString() {
 		return name + String.format(" [$%.2f]", funds);
 	}
+
 	
-	
-	/*********************
-	 * Getters and setters
-	 * @return
-	 */
-	// Name
-	public String getName() {
+
+	//region Name
+	//==================================================================================================================
+	String getName() {
 		return name;
 	}
 	
 	public void setName(String name) {
 		this.name = name;
 	}
+	//endregion
 	
 	
-	// Funds
+	//region Funds
+	//==================================================================================================================
 	public double getFunds() {
 		return funds;
 	}
@@ -62,72 +56,65 @@ public abstract class Player extends Person {
 		this.funds += fundsToAdd;
 	}
 
-	// Bets
-	// The player's bet for the k'th round
-	public void setBet(double bet) {
-		if(bet > funds) {
-			throw new ArithmeticException("Not enough funds to bet that much!");
-		}
-		
-		this.bet = bet;
-		funds -= bet;
+	public void removeFunds(double fundsToRemove) {
+		funds -= fundsToRemove;
 	}
-	
-	public double getBet() { return bet; }
-	public void doubleDown(Dealer dealer) {
-		// Throw an exception if we can't double down
-		if(bet > funds) {
-			throw new ArithmeticException("Not enough funds to double down!");
-		}
-		
-		// Double the bet on our end
-		funds -= bet;
-		bet *= 2;
+	//endregion
+
+
+	//region Cards
+	//==================================================================================================================
+	public void addHand() {
+		// Overloading, since the parent class holds onto null as the owner.
+		hands.add(new Hand(this));
 	}
 
-	// Winning status
-	public String getStatus() {
-		return status.toString();
-	}
-
-	public void resetStatus() {
-		status = null;
-	}
-
-	public void evaluateStatus() {
-		int rank = getHand().getTotalRank();
-
-		if(rank == 21 && getHand().getNumCards() == 2) {
-			// Natural 21
-			status = Status.natural;
-		} else if(rank > 21) {
-			// Busted out
-			status = Status.busted;
-		} else {
-			// Player is safe
-			status = Status.safe;
-		}
-	}
-
-	/********************
-	 * Game playing functions that are overwritten by child classes.
-	 * Operations would differ depending on if the user were a human or CPU
-	 * @return
+	/**
+	 * Given the deck, and the original hand that the player will split with:
+	 * 1. Create a new hand for the player
+	 * 2. Give the new hand one of the cards from the original hand
+	 * 3. Distribute a new card to each of the hands from the deck.
+	 * @param deck The deck to draw cards from after the split occurs
+	 * @param originalHand The hand to split with
 	 */
+	public void split(CardCollection deck, Hand originalHand) throws tooFewCardsInCollectionException {
+		// Making sure that the original hand has enough cards
+		if(originalHand.getNumCards() != 2) {
+			System.err.println("Error: Not enough cards in the original hand");
+			throw new tooFewCardsInCollectionException();
+		}
+
+		// Also making sure that the deck has enough cards
+		if(deck.getNumCards() < 2) {
+			System.err.println("Error: Not enough cards in the deck to draw (numCards: " + deck.getNumCards() + ")");
+			throw new tooFewCardsInCollectionException();
+		}
+
+		// Create the new hand
+		addHand();
+		Hand newHand = getAllHands().get(getNumHands() - 1);
+
+		// Put down a new betting amount on the new bet
+		double originalBet = originalHand.getBet();
+		newHand.setBet(originalBet);
+
+		// Transfer one of the cards to the new hand...
+		newHand.draw(originalHand, 1);
+
+		// .. And have each hand draw a new card
+		originalHand.draw(deck, 1);
+		newHand.draw(deck, 1);
+	}
+	//endregion
+
+
+	//region Abstract Game Functions
+	//==================================================================================================================
 	public abstract void placeBet(double minimumBet) throws NotEnoughFundsException;
-	protected abstract Boolean play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
+	public abstract void play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
+	//endregion
 	
 
 	private String name;
 	private double funds;
-	private double bet;
-	private Status status;
-
-	// After the player has played their round, what is their ending status?
-	// Did they bust out?
-	// Did they choose to stand?
-	// Did they hit a natural (total rank of 21 on the first 2 cards)
-	private enum Status {
-		busted, safe, natural
-	};
 }

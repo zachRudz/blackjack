@@ -11,15 +11,11 @@ public class Main {
     	GameController gc = new GameController();
         Deck deck = new Deck();
 
-       	// After each round, can we say that there has been a winner?
-		// Or, has everyone busted out?
-        Boolean isGameOver;
-	    
         // Initializing dealer
 	    Dealer dealer = new Dealer();
 	    
         // Initializing players
-	    ArrayList<Player> players = new ArrayList();
+	    ArrayList<Player> players = new ArrayList<>();
 	    players.add(new HumanPlayer("John", 500.00));
 	    players.add(new HumanPlayer("Steve", 500.00));
 		players.add(new HumanPlayer("Lilly", 500.00));

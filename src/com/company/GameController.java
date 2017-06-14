@@ -1,28 +1,28 @@
 package com.company;
 
 import com.company.cards.Deck;
+import com.company.cards.Hand;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
+ * The controller of a game of blackjack. Manages each round, and the minimum bets to be placed
  * Created by zach on 23/05/17.
  */
-public class GameController {
-	private double minimumBet = 5.00;
-
-
+class GameController {
 	/**
 	 * Play a single game of blackjack, using the players/dealer/deck supplied.
-	 * @param deck
-	 * @param dealer
-	 * @param players
-	 * @return True/false, depending on if there's been a winner (or everyone busted out)
+	 * @param deck The deck that will be used to play the game
+	 * @param dealer The dealer that the players will play against
+	 * @param players The collection of players that will play against the dealer
 	 */
-	public void playRound(Deck deck, Dealer dealer, ArrayList players) {
+	void playRound(Deck deck, Dealer dealer, ArrayList<Player> players) {
 		// Prepare for the round to begin
 		deck.shuffle();
-		placeBets(dealer, players);
+		createInitialHands(players);
+		placeBets(players);
 		dealCards(deck, dealer, players);
 
 		// Print the cards of each player, the number of cards in the deck, and the bets of each player.
@@ -30,7 +30,7 @@ public class GameController {
 
 		// Let each player make their decision, and then the dealer too
 		play_players(deck, dealer, players);
-		play_dealer(deck, dealer, players);
+		dealer.play(deck, players);
 
 		// Print the scores of each player + dealer
 		printFinalRanks(dealer, players);
@@ -48,7 +48,23 @@ public class GameController {
 		postGameElimination(players);
 	}
 
-	// Print the cards of each player, the number of cards in the deck, and the bets of each player.
+	//region Pre-game
+	//==================================================================================================================
+
+	/**
+	 * Since the hands get destroyed at the end of each round, create the initial hands to be used by each player.
+	 */
+	private void createInitialHands(ArrayList<Player> players) {
+		for(Player p : players) {
+			p.addHand();
+		}
+	}
+
+	/**
+	 * Print the cards of each player, the number of cards in the deck, and the bets of each player.
+	 * @param dealer The dealer to be played against by the players
+	 * @param players The collection of players to play against the dealer
+	 */
 	private void printGameInfo(Dealer dealer, ArrayList<Player> players) {
 		// Peek at the dealer's hand
 		System.out.println("Dealer");
@@ -67,18 +83,30 @@ public class GameController {
 		System.out.println();
 	}
 
-	// Deal cards to all players + the dealer
+	/**
+	 * Deal cards to all players + the dealer
+	 * @param deck The deck that will be used to play the game
+	 * @param dealer The dealer that the players will play against
+	 * @param players The collection of players that will play against the dealer
+	 */
 	private void dealCards(Deck deck, Dealer dealer, ArrayList<Player> players) {
+		// Create the initial hands for each player, and deal 2 cards
 		for (Player p : players) {
-			p.draw(deck, 2);
+			p.getHand().draw(deck, 2);
 		}
-		dealer.draw(deck, 2);
+
+		// The dealer will only ever have one hand, since they will never be able to split.
+		// Therefore, their (only) hand will be created in their constructor
+		dealer.getHand().draw(deck, 2);
 
 		System.out.println();
 	}
 
-	// Place the bets for all the players
-	private void placeBets(Dealer dealer, ArrayList<Player> players) {
+	/**
+	 * Place the bets for all the players
+	 * @param players The collection of players that will play against the dealer
+	 */
+	private void placeBets(ArrayList<Player> players) {
 		// Placing bets
 		System.out.println(String.format("Place your bets (Minimum bet: $%.2f).", minimumBet));
 		for (Player p : players) {
@@ -95,50 +123,52 @@ public class GameController {
 
 		System.out.println();
 	}
+	//endregion
 
 
-	// Let each player make their turn
-	// This means the hit/stand/double down action phase.
+
+	//region During the Game
+	//==================================================================================================================
+	/**
+	 * Let each player make their turn
+	 * This means the hit/stand/double down action phase.
+	 * @param deck The deck that will be used to play the game
+	 * @param dealer The dealer that the players will play against
+	 * @param players The collection of players that will play against the dealer
+	 */
 	private void play_players(Deck deck, Dealer dealer, ArrayList<Player> players) {
-		int currentRank;
-
 		// Letting each player have their turn
 		for (Player p : players) {
-			// Reset the player's status before they play
-			p.resetStatus();
-
 			// Each player has their turn
 			p.play(deck, dealer, players);
-
-			// Mark down the player's status for this game (Safe? Busted out? Doubled down, and is safe? Natural 21?)
-			p.evaluateStatus();
 		}
 	}
+	//endregion
 
-	private int play_dealer(Deck deck, Dealer dealer, ArrayList<Player> players) {
-		int dealerRank;
 
-		// Let the dealer play
-		dealer.play(deck,dealer,players);
 
-		// Get his rank, and print it
-		dealerRank = dealer.getHand().getTotalRank();
-
-		return dealerRank;
-	}
-
+	//region Post-Game
+	//==================================================================================================================
 	/**
 	 * Print the ranks of each player's hands
-	 * @param dealer
-	 * @param players
+	 * @param dealer The dealer that the players will play against
+	 * @param players The collection of players that will play against the dealer
 	 */
 	private void printFinalRanks(Dealer dealer, ArrayList<Player> players) {
+		int handNum;
+
 		System.out.println();
 		System.out.println("Final scores:");
 
 		// Printing players' rank
 		for(Player p : players) {
-			System.out.println(String.format("\t%s [%d]", p.getName(), p.getHand().getTotalRank()));
+			handNum = 1;
+			for(Hand h : p.getAllHands()) {
+				// Printing player name, their hand number, and the rank of that hand
+				// We print the hand number because a player would have more than one after a split.
+				System.out.println(String.format("\t%s [Hand %d] [%d]", p.getName(), handNum, h.getTotalRank()));
+				handNum++;
+			}
 		}
 
 		// Printing the dealer's rank
@@ -149,52 +179,65 @@ public class GameController {
 
 	/**
 	 * Distribute winnings amongst players
-	 * @param dealer
-	 * @param players
+	 * @param dealer The dealer that the players will play against
+	 * @param players The collection of players that will play against the dealer
 	 */
 	private void handleWinnings(Dealer dealer, ArrayList<Player> players) {
 		int dealerRank = dealer.getHand().getTotalRank();
+		int handNum;
 
-		// Handle the winnings for each player
+		/* Handle the winnings for each player */
 		System.out.println("Winnings: ");
 		for(Player p : players) {
-			int playerRank = p.getHand().getTotalRank();
-			System.out.print("\t");
+			handNum = 1;
 
-			// Evaluating what rewards the player will get from this round
-			if(p.getStatus() == "safe" && playerRank == dealerRank)  {
-				// Push: Player is safe, AND they matched the dealer's hand
-				// Bets go back to the player.
-				System.out.println(String.format("%s: Push (+ $%.2f).", p.getName(), p.getBet()));
-				p.addFunds(p.getBet());
+			for(Hand h : p.getAllHands()) {
+				System.out.print(String.format("\t%s [Hand %d]: ", p.getName(), handNum));
 
-			} else if(p.getStatus() == "natural") {
-				// Natural: Player has hit 21 on their opening hand
-				// Player gets their original bet, as well as an additional 1.5 times their bet from the dealer
-				System.out.println(String.format("%s: Natural blackjack (+ $%.2f).", p.getName(), p.getBet() * 2.5));
-				p.addFunds(p.getBet() * 2.5);
+				// Mark down the player's status for this game (Safe? Busted out? Doubled down, and is safe? Natural 21?)
+				// Do this for each of the players' hands
+				h.evaluateStatus();
 
-			} else if(p.getStatus() == "safe" && playerRank > dealerRank) {
-				// Beat the dealer: Player is safe, and they beat the dealer
-				// Player gets their original bet, as well as the dealer matching their bet.
-				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2));
-				p.addFunds(p.getBet() * 2);
+				int playerHandRank = h.getTotalRank();
 
-			} else if(p.getStatus() == "safe" && dealerRank > 21) {
-				// Beat the dealer: Dealer busted out, and the player is safe.
-				// Player gets their original bet, as well as the dealer matching their bet.
-				System.out.println(String.format("%s: Beat the dealer (+ $%.2f).", p.getName(), p.getBet() * 2));
-				p.addFunds(p.getBet() * 2);
+				// Evaluating what rewards the player will get from this round
+				if (Objects.equals(h.getStatus(), "safe") && playerHandRank == dealerRank) {
+					// Push: Player is safe, AND they matched the dealer's hand
+					// Bets go back to the player.
+					System.out.println(String.format("Push (+ $%.2f).", h.getBet()));
+					p.addFunds(h.getBet());
+
+				} else if (Objects.equals(h.getStatus(), "natural")) {
+					// Natural: Player has hit 21 on their opening hand
+					// Player gets their original bet, as well as an additional 1.5 times their bet from the dealer
+					System.out.println(String.format("Natural blackjack (+ $%.2f).", h.getBet() * 2.5));
+					p.addFunds(h.getBet() * 2.5);
+
+				} else if (Objects.equals(h.getStatus(), "safe") && playerHandRank > dealerRank) {
+					// Beat the dealer: Player is safe, and they beat the dealer
+					// Player gets their original bet, as well as the dealer matching their bet.
+					System.out.println(String.format("Beat the dealer (+ $%.2f).", h.getBet() * 2));
+					p.addFunds(h.getBet() * 2);
+
+				} else if (Objects.equals(h.getStatus(), "safe") && dealerRank > 21) {
+					// Beat the dealer: Dealer busted out, and the player is safe.
+					// Player gets their original bet, as well as the dealer matching their bet.
+					System.out.println(String.format("Beat the dealer (+ $%.2f).", h.getBet() * 2));
+					p.addFunds(h.getBet() * 2);
 
 
-				// -- Failure scenarios below --
-			} else if(p.getStatus() == "busted") {
-				// Player has busted out
-				System.out.println(String.format("%s: Busted out(+ $0.00).", p.getName()));
+					// -- Failure scenarios below --
+				} else if (Objects.equals(h.getStatus(), "busted")) {
+					// Player has busted out
+					System.out.println("Busted out(+ $0.00).");
 
-			} else {
-				// The dealer has beaten the player.
-				System.out.println(String.format("%s: Beaten by the dealer (+ $0.00).", p.getName()));
+				} else {
+					// The dealer has beaten the player.
+					System.out.println("Beaten by the dealer (+ $0.00).");
+				}
+
+				// Moving on to the next hand (rather, incrementing the ID of the hand, just for printing).
+				handNum++;
 			}
 		}
 	}
@@ -202,15 +245,20 @@ public class GameController {
 
 	/**
 	 * Collect all of the cards from the players + dealer and put them back in the deck
-	 * @param deck
-	 * @param dealer
-	 * @param players
+	 * @param deck The deck that will be used to play the game
+	 * @param dealer The dealer that the players will play against
+	 * @param players The collection of players that will play against the dealer
 	 */
 	private void collectCards(Deck deck, Dealer dealer, ArrayList<Player> players) {
+		// Collecting the dealer's cards
 		deck.collectCards(dealer.getHand());
 
-		for(Player p : players)
+		for (Player p : players) {
+			// Collect all of the cards from the players, then delete all of their hands
+			// We delete all of the players' hands because they could potentially have multiple after a split
 			deck.collectCards(p.getHand());
+			p.clearHands();
+		}
 	}
 
 
@@ -218,8 +266,7 @@ public class GameController {
 	 * Check to see who's run out of money. Eliminate players who have won the game, and make final statements if
 	 * everyone has busted out, or if one player is left.
 	 *
-	 * @param players
-	 * @return Returns True/false if the game is over (everyone busted out, or 1 player remains).
+	 * @param players The players who have just played a round
 	 */
 	private void postGameElimination(ArrayList<Player> players) {
 		System.out.println();
@@ -262,15 +309,16 @@ public class GameController {
 	/**
 	 * Check if we've reached the end of the game.
 	 * ie: Either only 1 player remains, or all players have busted out
-	 * @param players
-	 * @return
+	 * @param players The list of all players still active
+	 * @return True if the game is over.
 	 */
-	public Boolean isGameOver(ArrayList<Player> players) {
+	Boolean isGameOver(ArrayList<Player> players) {
 		// Check if we've got 1 player remaining, or if everyone has busted out
-		if(players.size() < 2) {
-			return true;
-		}
-
-		return false;
+		return players.size() < 2;
 	}
+	//endregion
+
+
+
+	private double minimumBet = 5.00;
 }
