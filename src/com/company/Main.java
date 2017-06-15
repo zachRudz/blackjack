@@ -42,7 +42,7 @@ public class Main {
 			isValidResponse = false;
 			while(!isValidResponse) {
 				// Read user's response
-				System.out.print("Play again? [y/n]");
+				System.out.print("Play again? [y/n] ");
 				response = in.next();
 
 				if (response.matches("[nN]*")) {

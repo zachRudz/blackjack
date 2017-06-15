@@ -62,6 +62,28 @@ public abstract class Player extends Person {
 	//endregion
 
 
+	//region Insurance
+	//==================================================================================================================
+	void insurance(double insuranceAmount) throws NotEnoughFundsException {
+		// Making sure that we have enough money for that
+		if(insuranceAmount > funds) {
+			throw new NotEnoughFundsException(insuranceAmount, funds);
+		}
+
+		insurance = insuranceAmount;
+		removeFunds(insuranceAmount);
+	}
+
+	void resetInsurance() {
+		insurance = 0.00;
+	}
+
+	double getInsurance() {
+		return insurance;
+	}
+	//endregion
+
+
 	//region Cards
 	//==================================================================================================================
 	public void addHand() {
@@ -110,6 +132,7 @@ public abstract class Player extends Person {
 
 	//region Abstract Game Functions
 	//==================================================================================================================
+	public abstract void buyInsurance(Hand hand);
 	public abstract void placeBet(double minimumBet) throws NotEnoughFundsException;
 	public abstract void play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayerHands);
 	//endregion
@@ -117,4 +140,6 @@ public abstract class Player extends Person {
 
 	private String name;
 	private double funds;
+	private double insurance;
+
 }

@@ -5,7 +5,12 @@ package com.company;
  * Created by zach on 10/06/17.
  */
 class NotEnoughFundsException extends Throwable {
-	NotEnoughFundsException(double minimumRequirement, double funds) {
-		super(String.format("Not enough funds (Have: $%.2f, need: $%2.f).", minimumRequirement, funds));
+	/**
+	 * Throwable exception to save us from going into a negative balance
+	 * @param requiredFunds How much money we're trying to take
+	 * @param funds How much money we actually have
+	 */
+	NotEnoughFundsException(double requiredFunds, double funds) {
+		super(String.format("Not enough funds (Have: $%.2f, need: $%2.f).", requiredFunds, funds));
 	}
 }

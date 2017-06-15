@@ -40,7 +40,7 @@ public class Card {
         this.suit = suit;
     }
 
-    Rank getRank() {
+    public Rank getRank() {
         return rank;
     }
     

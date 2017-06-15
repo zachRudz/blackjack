@@ -73,7 +73,6 @@ public class HumanPlayer extends Player {
 	public void play(Deck deck, Dealer dealer, ArrayList<Player> otherPlayers) {
 		System.out.println();
 
-
 		// When the player starts their turn, they begin with a single hand.
 		// If they decide to split, then they will get an additional hand.
 		int handNum;
@@ -250,6 +249,47 @@ public class HumanPlayer extends Player {
 			System.err.println("\tDeck count: " + deck.getNumCards() + ")");
 			System.err.println("\tOriginal hand count: " + currHand.getNumCards() + ")");
 			e.printStackTrace();
+		}
+	}
+
+
+	/**
+	 * Print game info to stdout, and perform the actual insurance
+	 * @param firstHand The first hand the player has
+	 */
+	public void buyInsurance(Hand firstHand) {
+		// Query whether or not the player wants to buy insurance.
+		Scanner in = new Scanner(System.in);
+		String response;
+
+		// Print player info
+		System.out.print(this);
+
+
+		// Read user input until user input is correct
+		while(true) {
+			// Read user's response
+			System.out.print("Buy insurance? [y/n] ");
+			response = in.next();
+
+			if (response.matches("[nN]*")) {
+				System.out.println(String.format("%s: I'll pass.", getName()));
+				return;
+
+			} else if (response.matches("[yY]*")) {
+				// Perform the insurance action
+				try {
+					super.insurance(firstHand.getBet());
+					System.out.println(String.format("%s: [$%.2f] I'll purchase insurance.", getName(), getFunds()));
+					return;
+
+				} catch (NotEnoughFundsException e) {
+					System.out.println("Error: Not enough funds to purchase insurance.");
+					e.printStackTrace();
+				}
+			} else {
+				System.out.print("I didn't understand that. ");
+			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.cards.Card;
 import com.company.cards.Deck;
 import com.company.cards.Hand;
 
@@ -27,6 +28,9 @@ class GameController {
 
 		// Print the cards of each player, the number of cards in the deck, and the bets of each player.
 		printGameInfo(dealer, players);
+
+		// Let each player purchase insurance if the dealer is showing an ace
+		handleInsurance(dealer, players);
 
 		// Let each player make their decision, and then the dealer too
 		play_players(deck, dealer, players);
@@ -103,7 +107,7 @@ class GameController {
 	}
 
 	/**
-	 * Place the bets for all the players
+	 * Place the bets for all the players. Also resets insurance for each player.
 	 * @param players The collection of players that will play against the dealer
 	 */
 	private void placeBets(ArrayList<Player> players) {
@@ -111,6 +115,9 @@ class GameController {
 		System.out.println(String.format("Place your bets (Minimum bet: $%.2f).", minimumBet));
 		for (Player p : players) {
 			System.out.println("[" + p.getName() + "]'s turn");
+
+			// Resetting insurance
+			p.resetInsurance();
 
 			// Placing the bet
 			try {
@@ -122,6 +129,31 @@ class GameController {
 		}
 
 		System.out.println();
+	}
+
+
+	/**
+	 * Let each player decide whether or not they want to purchase insurance.
+	 * This option is only available if the dealer is showing an ace.
+	 * @param dealer The dealer that the players will play against
+	 * @param players The collection of players that will play against the dealer
+	 */
+	private void handleInsurance(Dealer dealer, ArrayList<Player> players) {
+		// Only allow players to purchase insurance if the dealer is showing an ace.
+		if(dealer.getHand().peek().getRank() == Card.Rank.ACE) {
+			System.out.println("The dealer is showing an ace; Do you want to buy insurance?");
+
+			for(Player p : players) {
+				// Make sure the player has enough money to purchase insurance before committing to it
+				if(p.getFunds() >= p.getHand().getBet())
+					p.buyInsurance(p.getHand());
+				else
+					System.out.println(String.format("%s doesn't have enough money to purchase insurance.", p.getName()));
+			}
+
+			System.out.println("-----------");
+			System.out.println();
+		}
 	}
 	//endregion
 
@@ -186,11 +218,26 @@ class GameController {
 		int dealerRank = dealer.getHand().getTotalRank();
 		int handNum;
 
+		// Testing if players would win insurance if it was purchased
+		Boolean dealerHasNatural = dealer.hasNatural();
+
 		/* Handle the winnings for each player */
 		System.out.println("Winnings: ");
 		for(Player p : players) {
 			handNum = 1;
 
+			// Handling all of the payouts from each player's insurance (if it's been bought).
+			// Pay the player 2:1 on their insurance if they bought any
+			if(p.getInsurance() > 0) {
+				if(dealerHasNatural) {
+					System.out.println(String.format("\t%s: Insurance payed out (+ $%.2f).", p.getName(), p.getInsurance() * 2));
+					p.addFunds(p.getInsurance() * 2);
+				} else {
+					System.out.println(String.format("\t%s: Insurance didn't pay out (+ $0.00).", p.getName()));
+				}
+			}
+
+			// Handling all of the payouts from each player's hands
 			for(Hand h : p.getAllHands()) {
 				System.out.print(String.format("\t%s [Hand %d]: ", p.getName(), handNum));
 

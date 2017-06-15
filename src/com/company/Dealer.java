@@ -46,6 +46,14 @@ public class Dealer extends Person {
 		System.out.println(String.format("Score: [%d]", getHand().getTotalRank()));
 		getHand().printCards();
 	}
+
+	/**
+	 * Does the dealer have a natural blackjack?
+	 * @return True if the dealer has a natural 21
+	 */
+	public Boolean hasNatural() {
+		return (getNumHands() == 2) && (getHand().getTotalRank() == 21);
+	}
 	//endregion
 
 	/****
